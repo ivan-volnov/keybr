@@ -19,6 +19,9 @@ AppScreen::AppScreen()
     bkgd(COLOR_PAIR(ColorScheme::ColorWindow));
     translation_window = std::make_unique<TranslationWindow>();
     main_window = std::make_unique<MainWindow>();
+
+    trainer.fetch(60, deck);
+
     paint();
 }
 

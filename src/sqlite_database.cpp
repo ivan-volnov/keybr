@@ -120,6 +120,7 @@ bool Query::step() MAYTHROW
     if (!stmt) {
         prepare();
     }
+    col_idx = 0;
     switch (sqlite3_step(stmt)) {
     case SQLITE_ROW:
         return true;

@@ -11,25 +11,6 @@
 
 
 
-Deck::Deck()
-{
-    {
-        std::ifstream file(Config::instance().get_app_path().append("anki_cards.json"));
-        nlohmann::json json;
-        file >> json;
-        for (auto &card : json) {
-            Phrase phrase;
-            for (char ch : card["keyword"].get<std::string>()) {
-                phrase.symbols.push_back({ch});
-            }
-            phrase.translation = card["translation"].get<std::string>();
-            phrases.push_back(std::move(phrase));
-        }
-    }
-    shuffle();
-    phrases.resize(60);
-}
-
 const Phrase &Deck::current_phrase() const
 {
     return phrases[phrase_idx];
@@ -158,6 +139,11 @@ void Trainer::fetch(uint32_t count, Deck &deck)
            ")";
     sql.bind(count);
     while (sql.step()) {
-
+        Phrase phrase;
+        for (char ch : sql.get_string()) {
+            phrase.symbols.push_back({ch});
+        }
+        phrase.translation = sql.get_string();
+        deck.phrases.push_back(std::move(phrase));
     }
 }

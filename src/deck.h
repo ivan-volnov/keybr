@@ -28,8 +28,6 @@ public:
 class Deck
 {
 public:
-    Deck();
-
     Phrase &current_phrase();
     const Phrase &current_phrase() const;
 
