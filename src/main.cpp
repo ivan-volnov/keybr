@@ -3,7 +3,7 @@
 #include <iostream>
 #include <sys/sysctl.h>
 #include "3rdparty/argparse.hpp"
-#include "deck.h"
+#include "trainer.h"
 
 
 

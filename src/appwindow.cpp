@@ -4,7 +4,7 @@
 #include "translation_window.h"
 #include "main_window.h"
 #include "color_scheme.h"
-#include "deck.h"
+#include "trainer.h"
 
 
 
