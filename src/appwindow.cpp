@@ -4,6 +4,7 @@
 #include "translation_window.h"
 #include "main_window.h"
 #include "color_scheme.h"
+#include "deck.h"
 
 
 
@@ -20,7 +21,8 @@ AppScreen::AppScreen()
     translation_window = std::make_unique<TranslationWindow>();
     main_window = std::make_unique<MainWindow>();
 
-    trainer.fetch(60, deck);
+    trainer = std::make_unique<Trainer>();
+    trainer->fetch(60);
 
     paint();
 }
@@ -56,13 +58,13 @@ void AppScreen::run()
             }
             break;
         default:
-            if (!deck.process_key(key, repaint_panel)) {
+            if (!trainer->process_key(key, repaint_panel)) {
                 return;
             }
             if (repaint_panel) {
-                translation_window->paint(deck);
+                translation_window->paint(trainer->get_deck());
             }
-            main_window->paint(deck);
+            main_window->paint(trainer->get_deck());
             doupdate();
             break;
         }
@@ -76,7 +78,7 @@ void AppScreen::paint()
     getmaxyx(stdscr, height, width);
     mvwhline(stdscr, height - 2, 1, '_', width - 2);
     wnoutrefresh(stdscr);
-    translation_window->paint(deck);
-    main_window->paint(deck);
+    translation_window->paint(trainer->get_deck());
+    main_window->paint(trainer->get_deck());
     doupdate();
 }

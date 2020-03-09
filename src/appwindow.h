@@ -1,10 +1,11 @@
 #ifndef APPWINDOW_H
 #define APPWINDOW_H
 
-#include "deck.h"
+#include <memory>
 
 class TranslationWindow;
 class MainWindow;
+class Trainer;
 struct _win_st;
 using WINDOW = struct _win_st;
 
@@ -25,8 +26,7 @@ private:
     std::unique_ptr<TranslationWindow> translation_window;
     std::unique_ptr<MainWindow> main_window;
 
-    Deck deck;
-    Trainer trainer;
+    std::unique_ptr<Trainer> trainer;
 };
 
 #endif // APPWINDOW_H

@@ -33,22 +33,22 @@ void MainWindow::paint(const Deck &deck)
     wclear(window);
     wmove(window, 0, 0);
     int cursor_x = -1, cursor_y = -1;
-    for (int i = 0; i < deck.phrases.size(); ++i) {
+    for (int i = 0; i < deck.size(); ++i) {
         if (i) {
-            paint(' ', deck.phrases[i - 1].current_errors(-1), false);
+            paint(' ', deck.get_phrase(i - 1).current_errors(-1), false);
         }
-        auto &phrase = deck.phrases[i];
+        auto &phrase = deck.get_phrase(i);
         if (i && phrase.size() >= width - getcurx(window)) {
             waddch(window, '\n');
         }
         for (int j = 0; j < phrase.size(); ++j) {
-            if (i == deck.phrase_idx && j == deck.symbol_idx) {
+            if (i == deck.get_phrase_idx() && j == deck.get_symbol_idx()) {
                 getyx(window, cursor_y, cursor_x);
             }
-            paint(phrase.phrase[j], phrase.current_errors(j), cursor_x < 0);
+            paint(phrase.get_symbol(j), phrase.current_errors(j), cursor_x < 0);
             // TODO: wrap long phrases by words
         }
-        if (i == deck.phrase_idx && deck.symbol_idx >= deck.current_phrase().size()) {
+        if (i == deck.get_phrase_idx() && deck.get_symbol_idx() >= deck.current_phrase().size()) {
             getyx(window, cursor_y, cursor_x);
         }
     }

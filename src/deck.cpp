@@ -11,14 +11,15 @@
 
 
 
-const Phrase &Deck::current_phrase() const
+Phrase::Phrase(uint64_t id, const std::string &phrase, const std::string &translation) :
+    id(id), phrase(phrase), translation(translation)
 {
-    return phrases.at(phrase_idx);
+
 }
 
-Phrase &Deck::current_phrase()
+size_t Phrase::size() const
 {
-    return phrases.at(phrase_idx);
+    return phrase.size();
 }
 
 uint64_t Phrase::current_errors(int64_t pos) const
@@ -27,9 +28,44 @@ uint64_t Phrase::current_errors(int64_t pos) const
     return it == stats.end() ? 0 : it->second.current_errors;
 }
 
-size_t Phrase::size() const
+char Phrase::get_symbol(int64_t pos) const
 {
-    return phrase.size();
+    return phrase.at(pos);
+}
+
+const std::string &Phrase::get_translation() const
+{
+    return translation;
+}
+
+void Phrase::add_error(int64_t pos)
+{
+    ++stats[pos].current_errors;
+}
+
+size_t Deck::size() const
+{
+    return phrases.size();
+}
+
+const Phrase &Deck::current_phrase() const
+{
+    return phrases.at(phrase_idx);
+}
+
+const Phrase &Deck::get_phrase(size_t idx) const
+{
+    return phrases.at(idx);
+}
+
+size_t Deck::get_symbol_idx() const
+{
+    return symbol_idx;
+}
+
+size_t Deck::get_phrase_idx() const
+{
+    return phrase_idx;
 }
 
 bool Deck::process_key(int key, bool &repaint_panel)
@@ -37,22 +73,22 @@ bool Deck::process_key(int key, bool &repaint_panel)
     repaint_panel = false;
     if (symbol_idx >= current_phrase().size()) {
         if (key == ' ') {
-            if (++phrase_idx >= phrases.size()) {
+            if (++phrase_idx >= size()) {
                 return false;
             }
             symbol_idx = 0;
             repaint_panel = true;
         }
         else {
-            ++current_phrase().stats[-1].current_errors;
+            phrases.at(phrase_idx).add_error(-1);
         }
         return true;
     }
-    if (current_phrase().phrase.at(symbol_idx) == key) {
+    if (current_phrase().get_symbol(symbol_idx) == key) {
         repaint_panel = ++symbol_idx == current_phrase().size();
     }
     else {
-        ++current_phrase().stats[symbol_idx].current_errors;
+        phrases.at(phrase_idx).add_error(symbol_idx);
     }
     return true;
 }
@@ -127,7 +163,7 @@ void Trainer::import(const std::string &filename)
     }
 }
 
-void Trainer::fetch(uint32_t count, Deck &deck)
+void Trainer::fetch(uint32_t count)
 {
     auto sql = database->create_query();
     sql << "SELECT id, phrase, translation\n"
@@ -144,4 +180,14 @@ void Trainer::fetch(uint32_t count, Deck &deck)
                                 sql.get_string(),
                                 sql.get_string()});
     }
+}
+
+bool Trainer::process_key(int key, bool &repaint_panel)
+{
+    return deck.process_key(key, repaint_panel);
+}
+
+const Deck &Trainer::get_deck() const
+{
+    return deck;
 }

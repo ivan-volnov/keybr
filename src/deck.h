@@ -8,23 +8,27 @@
 
 
 
-class Stats
-{
-public:
-    const uint64_t cumulative_errors{};
-    const std::chrono::microseconds cumulative_delay{};
-    uint64_t current_errors{};
-    std::chrono::microseconds current_delay{};
-};
-
-
-
 class Phrase
 {
+    struct Stats
+    {
+        const uint64_t cumulative_errors{};
+        const std::chrono::microseconds cumulative_delay{};
+        uint64_t current_errors{};
+        std::chrono::microseconds current_delay{};
+    };
+
 public:
-    uint64_t current_errors(int64_t pos) const;
+    Phrase(uint64_t id, const std::string &phrase, const std::string &translation);
     size_t size() const;
 
+    uint64_t current_errors(int64_t pos) const;
+    char get_symbol(int64_t pos) const;
+    const std::string &get_translation() const;
+
+    void add_error(int64_t pos);
+
+private:
     uint64_t id;
     std::string phrase;
     std::string translation;
@@ -32,22 +36,29 @@ public:
 };
 
 
+class Trainer;
 
 class Deck
 {
+    friend class Trainer;
+
 public:
-    Phrase &current_phrase();
+    size_t size() const;
+
     const Phrase &current_phrase() const;
+    const Phrase &get_phrase(size_t idx) const;
+    size_t get_symbol_idx() const;
+    size_t get_phrase_idx() const;
 
     bool process_key(int key, bool &repaint_panel);
 
 private:
     void shuffle();
 
-public:
+private:
     std::vector<Phrase> phrases;
-    size_t phrase_idx = 0;
     size_t symbol_idx = 0;
+    size_t phrase_idx = 0;
 };
 
 
@@ -59,10 +70,15 @@ public:
     Trainer();
 
     void import(const std::string &filename);
-    void fetch(uint32_t count, Deck &deck);
+    void fetch(uint32_t count);
+
+    bool process_key(int key, bool &repaint_panel);
+
+    const Deck &get_deck() const;
 
 private:
     std::shared_ptr<SqliteDatabase> database;
+    Deck deck;
 };
 
 
