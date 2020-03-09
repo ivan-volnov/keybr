@@ -1,11 +1,14 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <cstdint>
+
 
 struct _win_st;
 using WINDOW = struct _win_st;
 class Deck;
 struct Symbol;
+typedef unsigned int chtype;
 
 
 class MainWindow
@@ -19,7 +22,7 @@ public:
     void paint(const Deck &deck);
 
 private:
-    void paint(const Symbol &symbol, bool is_grey);
+    void paint(chtype ch, uint64_t errors, bool is_grey);
 
 public:
     WINDOW *window;

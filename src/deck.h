@@ -4,13 +4,17 @@
 #include <string>
 #include <vector>
 #include <chrono>
+#include <unordered_map>
 
 
-struct Symbol
+
+class Stats
 {
-    char ch;
-    uint64_t errors;
-    std::chrono::microseconds delay;
+public:
+    const uint64_t cumulative_errors{};
+    const std::chrono::microseconds cumulative_delay{};
+    uint64_t current_errors{};
+    std::chrono::microseconds current_delay{};
 };
 
 
@@ -18,9 +22,13 @@ struct Symbol
 class Phrase
 {
 public:
-    std::vector<Symbol> symbols;
+    uint64_t current_errors(int64_t pos) const;
+    size_t size() const;
+
+    uint64_t id;
+    std::string phrase;
     std::string translation;
-    Symbol delimiter{' '};
+    std::unordered_map<int64_t, Stats> stats;
 };
 
 
@@ -30,9 +38,6 @@ class Deck
 public:
     Phrase &current_phrase();
     const Phrase &current_phrase() const;
-
-    Symbol &current_symbol();
-    const Symbol &current_symbol() const;
 
     bool process_key(int key, bool &repaint_panel);
 

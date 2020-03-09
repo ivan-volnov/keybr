@@ -13,29 +13,30 @@
 
 const Phrase &Deck::current_phrase() const
 {
-    return phrases[phrase_idx];
+    return phrases.at(phrase_idx);
 }
 
 Phrase &Deck::current_phrase()
 {
-    return phrases[phrase_idx];
+    return phrases.at(phrase_idx);
 }
 
-const Symbol &Deck::current_symbol() const
+uint64_t Phrase::current_errors(int64_t pos) const
 {
-    return current_phrase().symbols[symbol_idx];
+    auto it = stats.find(pos);
+    return it == stats.end() ? 0 : it->second.current_errors;
 }
 
-Symbol &Deck::current_symbol()
+size_t Phrase::size() const
 {
-    return current_phrase().symbols[symbol_idx];
+    return phrase.size();
 }
 
 bool Deck::process_key(int key, bool &repaint_panel)
 {
     repaint_panel = false;
-    if (symbol_idx >= current_phrase().symbols.size()) {
-        if (key == current_phrase().delimiter.ch) {
+    if (symbol_idx >= current_phrase().size()) {
+        if (key == ' ') {
             if (++phrase_idx >= phrases.size()) {
                 return false;
             }
@@ -43,15 +44,15 @@ bool Deck::process_key(int key, bool &repaint_panel)
             repaint_panel = true;
         }
         else {
-            ++current_phrase().delimiter.errors;
+            ++current_phrase().stats[-1].current_errors;
         }
         return true;
     }
-    if (current_symbol().ch == key) {
-        repaint_panel = ++symbol_idx == current_phrase().symbols.size();
+    if (current_phrase().phrase.at(symbol_idx) == key) {
+        repaint_panel = ++symbol_idx == current_phrase().size();
     }
     else {
-        ++current_symbol().errors;
+        ++current_phrase().stats[symbol_idx].current_errors;
     }
     return true;
 }
@@ -129,7 +130,7 @@ void Trainer::import(const std::string &filename)
 void Trainer::fetch(uint32_t count, Deck &deck)
 {
     auto sql = database->create_query();
-    sql << "SELECT phrase, translation\n"
+    sql << "SELECT id, phrase, translation\n"
            "FROM keybr_phrases\n"
            "WHERE id IN (\n"
            "    SELECT id\n"
@@ -139,11 +140,8 @@ void Trainer::fetch(uint32_t count, Deck &deck)
            ")";
     sql.bind(count);
     while (sql.step()) {
-        Phrase phrase;
-        for (char ch : sql.get_string()) {
-            phrase.symbols.push_back({ch});
-        }
-        phrase.translation = sql.get_string();
-        deck.phrases.push_back(std::move(phrase));
+        deck.phrases.push_back({sql.get_uint64(),
+                                sql.get_string(),
+                                sql.get_string()});
     }
 }

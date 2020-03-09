@@ -35,20 +35,20 @@ void MainWindow::paint(const Deck &deck)
     int cursor_x = -1, cursor_y = -1;
     for (int i = 0; i < deck.phrases.size(); ++i) {
         if (i) {
-            paint(deck.phrases[i - 1].delimiter, false);
+            paint(' ', deck.phrases[i - 1].current_errors(-1), false);
         }
         auto &phrase = deck.phrases[i];
-        if (i && phrase.symbols.size() >= width - getcurx(window)) {
+        if (i && phrase.size() >= width - getcurx(window)) {
             waddch(window, '\n');
         }
-        for (int j = 0; j < phrase.symbols.size(); ++j) {
+        for (int j = 0; j < phrase.size(); ++j) {
             if (i == deck.phrase_idx && j == deck.symbol_idx) {
                 getyx(window, cursor_y, cursor_x);
             }
-            paint(phrase.symbols[j], cursor_x < 0);
+            paint(phrase.phrase[j], phrase.current_errors(j), cursor_x < 0);
             // TODO: wrap long phrases by words
         }
-        if (i == deck.phrase_idx && deck.symbol_idx >= deck.current_phrase().symbols.size()) {
+        if (i == deck.phrase_idx && deck.symbol_idx >= deck.current_phrase().size()) {
             getyx(window, cursor_y, cursor_x);
         }
     }
@@ -56,16 +56,15 @@ void MainWindow::paint(const Deck &deck)
     wnoutrefresh(window);
 }
 
-void MainWindow::paint(const Symbol &symbol, bool is_grey)
+void MainWindow::paint(chtype ch, uint64_t errors, bool is_grey)
 {
-    chtype ch = symbol.ch;
-    if (symbol.errors) {
+    if (errors) {
         if (ch == ' ') {
             waddch(window, 0xe2);
             waddch(window, 0x90);
             ch = 0xa3;
         }
-        ch |= COLOR_PAIR(symbol.errors > 1 ? ColorScheme::ColorMultipleErrors : ColorScheme::ColorError);
+        ch |= COLOR_PAIR(errors > 1 ? ColorScheme::ColorMultipleErrors : ColorScheme::ColorError);
     }
     else if (is_grey) {
         ch |= COLOR_PAIR(ColorScheme::ColorGray);
