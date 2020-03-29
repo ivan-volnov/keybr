@@ -3,19 +3,23 @@
 
 #include <string>
 #include <vector>
-#include <chrono>
 #include <unordered_map>
+#include "average.h"
 
 
+
+class Trainer;
 
 class Phrase
 {
+    friend class Trainer;
+
     struct Stats
     {
-        const uint64_t cumulative_errors{};
-        const std::chrono::microseconds cumulative_delay{};
+        Average<double> avg_errors;
+        Average<uint64_t> avg_delay;
         uint64_t current_errors{};
-        std::chrono::microseconds current_delay{};
+        uint64_t current_delay{};
     };
 
 public:
@@ -36,7 +40,6 @@ private:
 };
 
 
-class Trainer;
 
 class Deck
 {

@@ -49,6 +49,8 @@ public:
     bool step() MAYTHROW;
     static Query &step(Query &query) MAYTHROW;
 
+    void add_array(size_t size) MAYTHROW;
+
     Query &reset() noexcept;
     Query &clear_bindings() noexcept;
 

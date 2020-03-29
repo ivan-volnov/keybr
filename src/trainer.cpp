@@ -79,10 +79,30 @@ void Trainer::fetch(uint32_t count)
            "    LIMIT ?\n"
            ")";
     sql.bind(count);
+    std::vector<uint64_t> ids;
     while (sql.step()) {
-        deck.phrases.push_back({sql.get_uint64(),
-                                sql.get_string(),
-                                sql.get_string()});
+        const auto id = sql.get_uint64();
+        ids.push_back(id);
+        deck.phrases.push_back({id, sql.get_string(), sql.get_string()});
+    }
+    sql.reset();
+    sql << "SELECT phrase_id, pos, errors, delay\n"
+           "FROM keybr_stats\n"
+           "WHERE phrase_id IN";
+    sql.add_array(ids.size());
+    for (const auto id : ids) {
+        sql.bind(id);
+    }
+    while (sql.step()) {
+        auto phrase_id = sql.get_uint64();
+        for (auto &phrase : deck.phrases) {
+            if (phrase.id != phrase_id) {
+                continue;
+            }
+            auto &stat = phrase.stats[sql.get_uint64()];
+            stat.avg_errors.add(sql.get_uint64());
+            stat.avg_delay.add(sql.get_uint64());
+        }
     }
 }
 

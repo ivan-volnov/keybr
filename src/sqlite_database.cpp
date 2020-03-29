@@ -137,6 +137,17 @@ Query &Query::step(Query &query) MAYTHROW
     return query;
 }
 
+void Query::add_array(size_t size) MAYTHROW
+{
+    if (!ss.str().empty()) {
+        ss << ' ';
+    }
+    for (int i = 0; i < size; ++i) {
+        ss << (i ? ",?" : "(?");
+    }
+    ss << ')';
+}
+
 
 
 Query &Query::reset() noexcept
