@@ -55,6 +55,14 @@ void Trainer::load()
 {
     fetch(10 - fetch(1, true));
     deck.shuffle();
+    if (speech) {
+        speech->say(deck.current_phrase().phrase);
+    }
+}
+
+void Trainer::set_sound_enabled(bool value)
+{
+    speech = value ? std::make_unique<SpeechEngine>() : nullptr;
 }
 
 void Trainer::import(const std::string &filename)
@@ -170,6 +178,11 @@ bool Trainer::process_key(int key, bool &repaint_panel)
     using namespace std::chrono;
     const auto delay = key_ts.time_since_epoch().count() > 0 ? duration_cast<microseconds>(steady_clock::now() - key_ts).count() : 0;
     if (deck.process_key(key, repaint_panel, delay)) {
+        if (!deck.symbol_idx && repaint_panel) {
+            if (speech) {
+                speech->say(deck.current_phrase().phrase);
+            }
+        }
         key_ts = steady_clock::now();
         return true;
     }
@@ -199,6 +212,9 @@ bool Trainer::process_key(int key, bool &repaint_panel)
     deck.symbol_idx = 0;
     deck.shuffle();
     key_ts = {};
+    if (speech) {
+        speech->say(deck.current_phrase().phrase);
+    }
     return true;
 }
 

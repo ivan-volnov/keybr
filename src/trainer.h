@@ -2,6 +2,7 @@
 #define TRAINER_H
 
 #include "deck.h"
+#include "speech_engine.h"
 #include <chrono>
 
 
@@ -14,6 +15,7 @@ public:
     Trainer();
 
     void load();
+    void set_sound_enabled(bool value);
     void import(const std::string &filename);
 
     bool process_key(int key, bool &repaint_panel);
@@ -28,6 +30,7 @@ private:
     std::shared_ptr<SqliteDatabase> database;
     Deck deck;
     std::chrono::steady_clock::time_point key_ts{};
+    std::unique_ptr<SpeechEngine> speech;
 };
 
 #endif // TRAINER_H

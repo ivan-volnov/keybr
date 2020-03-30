@@ -2,9 +2,6 @@
 #include <random>
 
 
-// TODO: we can use audio to speak current phrase!
-
-
 
 Phrase::Phrase(uint64_t id, const std::string &phrase, const std::string &translation, bool is_revision) :
     id(id), phrase(phrase), translation(translation), is_revision(is_revision)
@@ -90,6 +87,7 @@ bool Deck::process_key(int key, bool &repaint_panel, int64_t delay)
     int64_t errors = 0;
     int64_t idx = symbol_idx;
     if (symbol_idx >= current_phrase().size()) {
+        // on the space after the phrase
         idx = -1;
         if (key == ' ') {
             ++phrase_idx;
@@ -101,7 +99,9 @@ bool Deck::process_key(int key, bool &repaint_panel, int64_t delay)
         }
     }
     else if (current_phrase().get_symbol(symbol_idx) == key) {
+        // into the phrase
         if (++symbol_idx == current_phrase().size()) {
+            // on the last symbol of the phrase
             repaint_panel = true;
             if (phrase_idx + 1 >= size()) {
                 phrases.at(phrase_idx).add_stat(idx, 0, delay);

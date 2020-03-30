@@ -25,6 +25,10 @@ int main(int argc, char *argv[])
     argparse::ArgumentParser program("keybr");
     program.add_argument("--import")
            .help("Import cards from json file");
+    program.add_argument("--sound")
+      .help("Read aloud the current phrase")
+      .default_value(false)
+      .implicit_value(true);
 
     try {
         program.parse_args(argc, argv);
@@ -50,11 +54,13 @@ int main(int argc, char *argv[])
 
     if (AmIBeingDebugged()) {
         AppScreen app;
+        app.set_sound_enabled(program["--sound"] == true);
         app.run();
     }
     else {
         try {
             AppScreen app;
+            app.set_sound_enabled(program["--sound"] == true);
             app.run();
         }
         catch (const std::exception &e) {

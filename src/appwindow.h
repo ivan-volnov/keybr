@@ -18,6 +18,8 @@ public:
 
     void run();
 
+    void set_sound_enabled(bool value);
+
 private:
     void paint();
 

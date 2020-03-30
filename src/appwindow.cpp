@@ -22,9 +22,6 @@ AppScreen::AppScreen()
     main_window = std::make_unique<MainWindow>();
 
     trainer = std::make_unique<Trainer>();
-    trainer->load();
-
-    paint();
 }
 
 AppScreen::~AppScreen()
@@ -37,6 +34,8 @@ AppScreen::~AppScreen()
 
 void AppScreen::run()
 {
+    trainer->load();
+    paint();
     int key, height, width;
     bool repaint_panel;
     while (true)
@@ -69,6 +68,11 @@ void AppScreen::run()
             break;
         }
     }
+}
+
+void AppScreen::set_sound_enabled(bool value)
+{
+    trainer->set_sound_enabled(value);
 }
 
 void AppScreen::paint()
