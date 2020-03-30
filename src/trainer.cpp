@@ -36,6 +36,7 @@ Trainer::Trainer() :
                                "    pos INTEGER NOT NULL,\n"
                                "    errors INTEGER NOT NULL DEFAULT 0,\n"
                                "    delay INTEGER NOT NULL DEFAULT 0,\n"
+                               "    ch TEXT NOT NULL,\n"
                                "    FOREIGN KEY (phrase_id) REFERENCES keybr_phrases(id)\n"
                                ")");
                 database->exec("CREATE INDEX keybr_stats_phrase_id_idx ON keybr_stats(phrase_id)");
@@ -150,8 +151,8 @@ uint64_t Trainer::fetch(uint64_t count, bool revise)
 void Trainer::save(Phrase &phrase)
 {
     auto sql = database->create_query();
-    sql << "INSERT INTO keybr_stats (phrase_id, pos, errors, delay) VALUES";
-    sql.add_array(4);
+    sql << "INSERT INTO keybr_stats (phrase_id, pos, errors, delay, ch) VALUES";
+    sql.add_array(5);
     for (auto &stat : phrase.stats) {
         const int64_t errors = phrase.is_revision && !stat.second.current_errors && stat.second.errors >= 1 ? -1 : stat.second.current_errors;
         const uint64_t delay = stat.second.current_delay.value();
@@ -165,6 +166,7 @@ void Trainer::save(Phrase &phrase)
         sql.bind(stat.first);
         sql.bind(errors);
         sql.bind(delay);
+        sql.bind(std::string(1, phrase.get_symbol(stat.first)));
         sql.step();
         stat.second.errors += errors;
         if (delay) {

@@ -53,6 +53,7 @@ public:
     size_t size() const;
 
     const Phrase &current_phrase() const;
+    char current_symbol() const;
     const Phrase &get_phrase(size_t idx) const;
     size_t get_symbol_idx() const;
     size_t get_phrase_idx() const;

@@ -41,7 +41,7 @@ int64_t Phrase::errors() const
 
 char Phrase::get_symbol(int64_t pos) const
 {
-    return phrase.at(pos);
+    return pos < 0 ? ' ' : phrase.at(pos);
 }
 
 const std::string &Phrase::get_translation() const
@@ -64,6 +64,11 @@ size_t Deck::size() const
 const Phrase &Deck::current_phrase() const
 {
     return phrases.at(phrase_idx);
+}
+
+char Deck::current_symbol() const
+{
+    return phrases.at(phrase_idx).get_symbol(symbol_idx);
 }
 
 const Phrase &Deck::get_phrase(size_t idx) const
