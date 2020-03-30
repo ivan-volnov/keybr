@@ -23,11 +23,13 @@ class Phrase
     };
 
 public:
-    Phrase(uint64_t id, const std::string &phrase, const std::string &translation);
+    Phrase(uint64_t id, const std::string &phrase, const std::string &translation, bool is_revision);
     size_t size() const;
 
     uint64_t current_errors(int64_t pos) const;
     bool has_current_errors() const;
+    double avg_errors() const;
+
     char get_symbol(int64_t pos) const;
     const std::string &get_translation() const;
 
@@ -37,8 +39,8 @@ private:
     uint64_t id;
     std::string phrase;
     std::string translation;
+    bool is_revision;
     std::unordered_map<int64_t, Stats> stats;
-    bool is_revision = false;
 };
 
 

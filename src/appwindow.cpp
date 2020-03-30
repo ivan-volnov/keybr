@@ -22,7 +22,7 @@ AppScreen::AppScreen()
     main_window = std::make_unique<MainWindow>();
 
     trainer = std::make_unique<Trainer>();
-    trainer->fetch(60);
+    trainer->load();
 
     paint();
 }

@@ -51,6 +51,12 @@ Trainer::Trainer() :
                    ")");
 }
 
+void Trainer::load()
+{
+    fetch(1, true);
+    fetch(59);
+}
+
 void Trainer::import(const std::string &filename)
 {
     std::ifstream file(filename);
@@ -71,26 +77,35 @@ void Trainer::import(const std::string &filename)
     }
 }
 
-void Trainer::fetch(uint32_t count)
+void Trainer::fetch(uint32_t count, bool revise)
 {
     if (!count) {
         return;
     }
     auto sql = database->create_query();
-    sql << "SELECT id, phrase, translation\n"
-           "FROM keybr_phrases\n"
-           "WHERE id NOT IN (\n"
+    sql << "SELECT p.id, p.phrase, p.translation\n"
+           "FROM keybr_phrases p\n";
+    if (revise) {
+        sql << "JOIN keybr_stats s ON p.id = s.phrase_id\n";
+    }
+    sql << "WHERE p.id NOT IN (\n"
            "    SELECT phrase_id\n"
            "    FROM keybr_tmp_phrase_ids\n"
-           ")\n"
-           "ORDER BY RANDOM()\n"
-           "LIMIT ?";
+           ")\n";
+    if (revise) {
+        sql << "GROUP BY p.id\n"
+               "ORDER BY sum(s.errors) DESC\n";
+    }
+    else {
+        sql << "ORDER BY RANDOM()\n";
+    }
+    sql << "LIMIT ?";
     sql.bind(count);
     std::vector<uint64_t> ids;
     while (sql.step()) {
         const auto id = sql.get_uint64();
         ids.push_back(id);
-        deck.phrases.push_back({id, sql.get_string(), sql.get_string()});
+        deck.phrases.push_back({id, sql.get_string(), sql.get_string(), revise});
     }
     auto sql_inserter = database->create_query();
     for (size_t i = 0; i < ids.size();) {
@@ -112,7 +127,7 @@ void Trainer::fetch(uint32_t count)
                     continue;
                 }
                 auto &stat = phrase.stats[sql.get_uint64()];
-                stat.avg_errors.add(sql.get_uint64());
+                stat.avg_errors.add(sql.get_int64());
                 stat.avg_delay.add(sql.get_uint64());
             }
         }
@@ -148,9 +163,8 @@ bool Trainer::process_key(int key, bool &repaint_panel)
     auto transaction = database->begin_transaction();
     size_t erased = 0;
     for (auto phrase = deck.phrases.begin(); phrase != deck.phrases.end();) {
-        const auto has_current_errors = phrase->has_current_errors();
         save(*phrase);
-        if (has_current_errors) {
+        if (phrase->avg_errors() > 0) {
             phrase->is_revision = true;
             ++phrase;
         }

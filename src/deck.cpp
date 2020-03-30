@@ -6,8 +6,8 @@
 
 
 
-Phrase::Phrase(uint64_t id, const std::string &phrase, const std::string &translation) :
-    id(id), phrase(phrase), translation(translation)
+Phrase::Phrase(uint64_t id, const std::string &phrase, const std::string &translation, bool is_revision) :
+    id(id), phrase(phrase), translation(translation), is_revision(is_revision)
 {
 
 }
@@ -25,12 +25,24 @@ uint64_t Phrase::current_errors(int64_t pos) const
 
 bool Phrase::has_current_errors() const
 {
-    for (auto &stat : stats) {
+    for (const auto &stat : stats) {
         if (stat.second.current_errors > 0) {
             return true;
         }
     }
     return false;
+}
+
+double Phrase::avg_errors() const
+{
+    Average<double> avg;
+    for (const auto &stat : stats) {
+        avg.add(stat.second.avg_errors);
+        if (stat.second.current_errors > 0) {
+            avg.add(stat.second.current_errors);
+        }
+    }
+    return avg.value();
 }
 
 char Phrase::get_symbol(int64_t pos) const
