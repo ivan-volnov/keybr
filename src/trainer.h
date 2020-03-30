@@ -14,7 +14,7 @@ class Trainer
 public:
     Trainer();
 
-    void load();
+    bool load();
     void set_sound_enabled(bool value);
     void import(const std::string &filename);
 

@@ -34,7 +34,9 @@ AppScreen::~AppScreen()
 
 void AppScreen::run()
 {
-    trainer->load();
+    if (!trainer->load()) {
+        return;
+    }
     paint();
     int key, height, width;
     bool repaint_panel;

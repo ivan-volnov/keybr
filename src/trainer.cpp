@@ -52,13 +52,17 @@ Trainer::Trainer() :
                    ")");
 }
 
-void Trainer::load()
+bool Trainer::load()
 {
     fetch(10 - fetch(1, true));
+    if (!deck.size()) {
+        return false;
+    }
     deck.shuffle();
     if (speech) {
         speech->say(deck.current_phrase().phrase);
     }
+    return true;
 }
 
 void Trainer::set_sound_enabled(bool value)
