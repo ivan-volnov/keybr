@@ -126,13 +126,14 @@ void Trainer::save(Phrase &phrase)
     sql << "INSERT INTO keybr_stats (phrase_id, pos, errors, delay) VALUES";
     sql.add_array(4);
     for (auto &stat : phrase.stats) {
+        const int64_t errors = phrase.is_revision && !stat.second.current_errors ? -1 : stat.second.current_errors;
         sql.clear_bindings();
         sql.bind(phrase.id);
         sql.bind(stat.first);
-        sql.bind(stat.second.current_errors);
+        sql.bind(errors);
         sql.bind(stat.second.current_delay);
         sql.step();
-        stat.second.avg_errors.add(stat.second.current_errors);
+        stat.second.avg_errors.add(errors);
         stat.second.avg_delay.add(stat.second.current_delay);
         stat.second.current_errors = 0;
         stat.second.current_delay = 0;
@@ -150,6 +151,7 @@ bool Trainer::process_key(int key, bool &repaint_panel)
         const auto has_current_errors = phrase->has_current_errors();
         save(*phrase);
         if (has_current_errors) {
+            phrase->is_revision = true;
             ++phrase;
         }
         else {

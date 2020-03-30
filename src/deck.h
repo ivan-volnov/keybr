@@ -38,6 +38,7 @@ private:
     std::string phrase;
     std::string translation;
     std::unordered_map<int64_t, Stats> stats;
+    bool is_revision = false;
 };
 
 
