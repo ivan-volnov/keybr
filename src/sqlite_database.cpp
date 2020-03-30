@@ -137,15 +137,25 @@ Query &Query::step(Query &query) MAYTHROW
     return query;
 }
 
-void Query::add_array(size_t size) MAYTHROW
+void Query::add_array(size_t columns) MAYTHROW
 {
     if (!ss.str().empty()) {
         ss << ' ';
     }
-    for (int i = 0; i < size; ++i) {
+    for (size_t i = 0; i < columns; ++i) {
         ss << (i ? ",?" : "(?");
     }
     ss << ')';
+}
+
+void Query::add_array(size_t columns, size_t rows) MAYTHROW
+{
+    for (size_t i = 0; i < rows; ++i) {
+        if (i) {
+            ss << ',';
+        }
+        add_array(columns);
+    }
 }
 
 

@@ -46,6 +46,9 @@ Trainer::Trainer() :
         }
         sql.reset() << "PRAGMA user_version =" << db_version << Query::step;
     }
+    database->exec("CREATE TEMPORARY TABLE keybr_tmp_phrase_ids(\n"
+                   "    phrase_id INTEGER PRIMARY KEY\n"
+                   ")");
 }
 
 void Trainer::import(const std::string &filename)
@@ -58,7 +61,8 @@ void Trainer::import(const std::string &filename)
     file >> json;
     auto transaction = database->begin_transaction();
     auto sql = database->create_query();
-    sql << "INSERT OR IGNORE INTO keybr_phrases (phrase, translation) VALUES(?,?)";
+    sql << "INSERT OR IGNORE INTO keybr_phrases (phrase, translation) VALUES";
+    sql.add_array(2);
     for (auto &card : json) {
         sql.clear_bindings();
         sql.bind(card["keyword"].get<std::string>());
@@ -67,36 +71,38 @@ void Trainer::import(const std::string &filename)
     }
 }
 
-void Trainer::fetch(uint32_t count)
+uint32_t Trainer::fetch(uint32_t count)
 {
     auto sql = database->create_query();
     sql << "SELECT id, phrase, translation\n"
            "FROM keybr_phrases\n"
-           "WHERE id IN (\n"
-           "    SELECT id\n"
-           "    FROM keybr_phrases\n"
-           "    ORDER BY RANDOM()\n"
-           "    LIMIT ?\n"
-           ")";
+           "WHERE id NOT IN (\n"
+           "    SELECT phrase_id\n"
+           "    FROM keybr_tmp_phrase_ids\n"
+           ")\n"
+           "ORDER BY RANDOM()\n"
+           "LIMIT ?";
     sql.bind(count);
+    count = 0;
     std::vector<uint64_t> ids;
     while (sql.step()) {
         const auto id = sql.get_uint64();
         ids.push_back(id);
         deck.phrases.push_back({id, sql.get_string(), sql.get_string()});
+        ++count;
     }
-    size_t len;
-    const size_t chunk_size = 1000;
-    for (auto it = ids.begin(); it != ids.end(); ++it) {
-        sql.reset();
-        sql << "SELECT phrase_id, pos, errors, delay\n"
-               "FROM keybr_stats\n"
-               "WHERE phrase_id IN";
-        auto it_tmp = it;
-        for (len = 0; len < chunk_size && it_tmp != ids.end(); ++len, ++it_tmp);
-        sql.add_array(len);
-        for (len = 0; len < chunk_size && it != ids.end(); ++len, ++it) {
-            sql.bind(*it);
+    auto sql_inserter = database->create_query();
+    for (size_t i = 0; i < ids.size();) {
+        const auto chunk_size = std::min(ids.size() - i, static_cast<size_t>(1000));
+        sql.reset() << "SELECT phrase_id, pos, errors, delay\n"
+                       "FROM keybr_stats\n"
+                       "WHERE phrase_id IN";
+        sql.add_array(chunk_size);
+        sql_inserter.reset() << "INSERT INTO keybr_tmp_phrase_ids (phrase_id) VALUES";
+        sql_inserter.add_array(1, chunk_size);
+        for (size_t j = 0; j < chunk_size; ++j) {
+            sql.bind(ids[i++]);
+            sql_inserter.bind(ids[i]);
         }
         while (sql.step()) {
             const auto phrase_id = sql.get_uint64();
@@ -109,7 +115,9 @@ void Trainer::fetch(uint32_t count)
                 stat.avg_delay.add(sql.get_uint64());
             }
         }
+        sql_inserter.step();
     }
+    return count;
 }
 
 bool Trainer::process_key(int key, bool &repaint_panel)
