@@ -71,8 +71,11 @@ void Trainer::import(const std::string &filename)
     }
 }
 
-uint32_t Trainer::fetch(uint32_t count)
+void Trainer::fetch(uint32_t count)
 {
+    if (!count) {
+        return;
+    }
     auto sql = database->create_query();
     sql << "SELECT id, phrase, translation\n"
            "FROM keybr_phrases\n"
@@ -83,13 +86,11 @@ uint32_t Trainer::fetch(uint32_t count)
            "ORDER BY RANDOM()\n"
            "LIMIT ?";
     sql.bind(count);
-    count = 0;
     std::vector<uint64_t> ids;
     while (sql.step()) {
         const auto id = sql.get_uint64();
         ids.push_back(id);
         deck.phrases.push_back({id, sql.get_string(), sql.get_string()});
-        ++count;
     }
     auto sql_inserter = database->create_query();
     for (size_t i = 0; i < ids.size();) {
@@ -101,8 +102,8 @@ uint32_t Trainer::fetch(uint32_t count)
         sql_inserter.reset() << "INSERT INTO keybr_tmp_phrase_ids (phrase_id) VALUES";
         sql_inserter.add_array(1, chunk_size);
         for (size_t j = 0; j < chunk_size; ++j) {
-            sql.bind(ids[i++]);
-            sql_inserter.bind(ids[i]);
+            sql.bind(ids[i]);
+            sql_inserter.bind(ids[i++]);
         }
         while (sql.step()) {
             const auto phrase_id = sql.get_uint64();
@@ -117,12 +118,54 @@ uint32_t Trainer::fetch(uint32_t count)
         }
         sql_inserter.step();
     }
-    return count;
+}
+
+void Trainer::save(Phrase &phrase)
+{
+    auto sql = database->create_query();
+    sql << "INSERT INTO keybr_stats (phrase_id, pos, errors, delay) VALUES";
+    sql.add_array(4);
+    for (auto &stat : phrase.stats) {
+        sql.clear_bindings();
+        sql.bind(phrase.id);
+        sql.bind(stat.first);
+        sql.bind(stat.second.current_errors);
+        sql.bind(stat.second.current_delay);
+        sql.step();
+        stat.second.avg_errors.add(stat.second.current_errors);
+        stat.second.avg_delay.add(stat.second.current_delay);
+        stat.second.current_errors = 0;
+        stat.second.current_delay = 0;
+    }
 }
 
 bool Trainer::process_key(int key, bool &repaint_panel)
 {
-    return deck.process_key(key, repaint_panel);
+    if (deck.process_key(key, repaint_panel)) {
+        return true;
+    }
+    auto transaction = database->begin_transaction();
+    size_t erased = 0;
+    for (auto phrase = deck.phrases.begin(); phrase != deck.phrases.end();) {
+        const auto has_current_errors = phrase->has_current_errors();
+        save(*phrase);
+        if (has_current_errors) {
+            ++phrase;
+        }
+        else {
+            phrase = deck.phrases.erase(phrase);
+            ++erased;
+        }
+    }
+    fetch(erased);
+    if (deck.phrases.empty()) {
+        return false;
+    }
+    deck.phrase_idx = 0;
+    deck.symbol_idx = 0;
+    deck.shuffle();
+    repaint_panel = true;
+    return true;
 }
 
 const Deck &Trainer::get_deck() const

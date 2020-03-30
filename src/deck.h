@@ -27,6 +27,7 @@ public:
     size_t size() const;
 
     uint64_t current_errors(int64_t pos) const;
+    bool has_current_errors() const;
     char get_symbol(int64_t pos) const;
     const std::string &get_translation() const;
 

@@ -23,6 +23,16 @@ uint64_t Phrase::current_errors(int64_t pos) const
     return it == stats.end() ? 0 : it->second.current_errors;
 }
 
+bool Phrase::has_current_errors() const
+{
+    for (auto &stat : stats) {
+        if (stat.second.current_errors > 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
 char Phrase::get_symbol(int64_t pos) const
 {
     return phrase.at(pos);

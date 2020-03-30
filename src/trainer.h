@@ -13,7 +13,8 @@ public:
     Trainer();
 
     void import(const std::string &filename);
-    uint32_t fetch(uint32_t count);
+    void fetch(uint32_t count);
+    void save(Phrase &phrase);
 
     bool process_key(int key, bool &repaint_panel);
 
