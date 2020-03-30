@@ -53,8 +53,7 @@ Trainer::Trainer() :
 
 void Trainer::load()
 {
-    fetch(1, true);
-    fetch(59);
+    fetch(10 - fetch(1, true));
     deck.shuffle();
 }
 
@@ -78,10 +77,10 @@ void Trainer::import(const std::string &filename)
     }
 }
 
-void Trainer::fetch(uint32_t count, bool revise)
+uint64_t Trainer::fetch(uint64_t count, bool revise)
 {
     if (!count) {
-        return;
+        return 0;
     }
     auto sql = database->create_query();
     sql << "SELECT p.id, p.phrase, p.translation\n"
@@ -127,13 +126,17 @@ void Trainer::fetch(uint32_t count, bool revise)
                 if (phrase.id != phrase_id) {
                     continue;
                 }
-                auto &stat = phrase.stats[sql.get_uint64()];
+                auto &stat = phrase.stats[sql.get_int64()];
                 stat.errors += sql.get_int64();
-                stat.avg_delay.add(sql.get_uint64());
+                const auto delay = sql.get_uint64();
+                if (delay) {
+                    stat.avg_delay.add(delay);
+                }
             }
         }
         sql_inserter.step();
     }
+    return ids.size();
 }
 
 void Trainer::save(Phrase &phrase)
@@ -143,22 +146,31 @@ void Trainer::save(Phrase &phrase)
     sql.add_array(4);
     for (auto &stat : phrase.stats) {
         const int64_t errors = phrase.is_revision && !stat.second.current_errors && stat.second.errors >= 1 ? -1 : stat.second.current_errors;
+        const uint64_t delay = stat.second.current_delay.value();
+        stat.second.current_errors = 0;
+        stat.second.current_delay.reset();
+        if (!errors && !delay) {
+            continue;
+        }
         sql.clear_bindings();
         sql.bind(phrase.id);
         sql.bind(stat.first);
         sql.bind(errors);
-        sql.bind(stat.second.current_delay);
+        sql.bind(delay);
         sql.step();
         stat.second.errors += errors;
-        stat.second.avg_delay.add(stat.second.current_delay);
-        stat.second.current_errors = 0;
-        stat.second.current_delay = 0;
+        if (delay) {
+            stat.second.avg_delay.add(delay);
+        }
     }
 }
 
 bool Trainer::process_key(int key, bool &repaint_panel)
 {
-    if (deck.process_key(key, repaint_panel)) {
+    using namespace std::chrono;
+    const auto delay = key_ts.time_since_epoch().count() > 0 ? duration_cast<microseconds>(steady_clock::now() - key_ts).count() : 0;
+    if (deck.process_key(key, repaint_panel, delay)) {
+        key_ts = steady_clock::now();
         return true;
     }
     auto transaction = database->begin_transaction();
@@ -177,8 +189,7 @@ bool Trainer::process_key(int key, bool &repaint_panel)
         }
     }
     if (erased > 1 && !has_revision) {
-        fetch(1, true);
-        --erased;
+        erased -= fetch(1, true);
     }
     fetch(erased);
     if (deck.phrases.empty()) {
@@ -187,6 +198,7 @@ bool Trainer::process_key(int key, bool &repaint_panel)
     deck.phrase_idx = 0;
     deck.symbol_idx = 0;
     deck.shuffle();
+    key_ts = {};
     return true;
 }
 

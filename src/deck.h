@@ -3,7 +3,7 @@
 
 #include <string>
 #include <vector>
-#include <unordered_map>
+#include <map>
 #include "average.h"
 
 
@@ -18,29 +18,29 @@ class Phrase
     {
         int64_t errors;
         Average<uint64_t> avg_delay;
-        uint64_t current_errors{};
-        uint64_t current_delay{};
+        int64_t current_errors{};
+        Average<uint64_t> current_delay{};
     };
 
 public:
     Phrase(uint64_t id, const std::string &phrase, const std::string &translation, bool is_revision);
     size_t size() const;
 
-    uint64_t current_errors(int64_t pos) const;
+    int64_t current_errors(int64_t pos) const;
     bool has_current_errors() const;
     int64_t errors() const;
 
     char get_symbol(int64_t pos) const;
     const std::string &get_translation() const;
 
-    void add_error(int64_t pos);
+    void add_stat(int64_t pos, int64_t errors, int64_t delay);
 
 private:
     uint64_t id;
     std::string phrase;
     std::string translation;
     bool is_revision;
-    std::unordered_map<int64_t, Stats> stats;
+    std::map<int64_t, Stats> stats;
 };
 
 
@@ -57,7 +57,7 @@ public:
     size_t get_symbol_idx() const;
     size_t get_phrase_idx() const;
 
-    bool process_key(int key, bool &repaint_panel);
+    bool process_key(int key, bool &repaint_panel, int64_t delay);
 
 private:
     void shuffle();

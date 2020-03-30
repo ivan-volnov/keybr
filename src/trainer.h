@@ -2,6 +2,7 @@
 #define TRAINER_H
 
 #include "deck.h"
+#include <chrono>
 
 
 
@@ -20,12 +21,13 @@ public:
     const Deck &get_deck() const;
 
 private:
-    void fetch(uint32_t count, bool revise = false);
+    uint64_t fetch(uint64_t count, bool revise = false);
     void save(Phrase &phrase);
 
 private:
     std::shared_ptr<SqliteDatabase> database;
     Deck deck;
+    std::chrono::steady_clock::time_point key_ts{};
 };
 
 #endif // TRAINER_H

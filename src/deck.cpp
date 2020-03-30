@@ -17,7 +17,7 @@ size_t Phrase::size() const
     return phrase.size();
 }
 
-uint64_t Phrase::current_errors(int64_t pos) const
+int64_t Phrase::current_errors(int64_t pos) const
 {
     auto it = stats.find(pos);
     return it == stats.end() ? 0 : it->second.current_errors;
@@ -52,9 +52,11 @@ const std::string &Phrase::get_translation() const
     return translation;
 }
 
-void Phrase::add_error(int64_t pos)
+void Phrase::add_stat(int64_t pos, int64_t errors, int64_t delay)
 {
-    ++stats[pos].current_errors;
+    auto &stat = stats[pos];
+    stat.current_errors += errors;
+    stat.current_delay.add(delay);
 }
 
 size_t Deck::size() const
@@ -82,31 +84,35 @@ size_t Deck::get_phrase_idx() const
     return phrase_idx;
 }
 
-bool Deck::process_key(int key, bool &repaint_panel)
+bool Deck::process_key(int key, bool &repaint_panel, int64_t delay)
 {
     repaint_panel = false;
+    int64_t errors = 0;
+    int64_t idx = symbol_idx;
     if (symbol_idx >= current_phrase().size()) {
+        idx = -1;
         if (key == ' ') {
             ++phrase_idx;
             symbol_idx = 0;
             repaint_panel = true;
         }
         else {
-            phrases.at(phrase_idx).add_error(-1);
+            errors = 1;
         }
-        return true;
     }
-    if (current_phrase().get_symbol(symbol_idx) == key) {
+    else if (current_phrase().get_symbol(symbol_idx) == key) {
         if (++symbol_idx == current_phrase().size()) {
             repaint_panel = true;
             if (phrase_idx + 1 >= size()) {
+                phrases.at(phrase_idx).add_stat(idx, 0, delay);
                 return false;
             }
         }
     }
     else {
-        phrases.at(phrase_idx).add_error(symbol_idx);
+        errors = 1;
     }
+    phrases.at(phrase_idx).add_stat(idx, errors, delay);
     return true;
 }
 
