@@ -164,7 +164,6 @@ bool Trainer::process_key(int key, bool &repaint_panel)
     deck.phrase_idx = 0;
     deck.symbol_idx = 0;
     deck.shuffle();
-    repaint_panel = true;
     return true;
 }
 

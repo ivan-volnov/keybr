@@ -78,9 +78,7 @@ bool Deck::process_key(int key, bool &repaint_panel)
     repaint_panel = false;
     if (symbol_idx >= current_phrase().size()) {
         if (key == ' ') {
-            if (++phrase_idx >= size()) {
-                return false;
-            }
+            ++phrase_idx;
             symbol_idx = 0;
             repaint_panel = true;
         }
@@ -90,7 +88,12 @@ bool Deck::process_key(int key, bool &repaint_panel)
         return true;
     }
     if (current_phrase().get_symbol(symbol_idx) == key) {
-        repaint_panel = ++symbol_idx == current_phrase().size();
+        if (++symbol_idx == current_phrase().size()) {
+            repaint_panel = true;
+            if (phrase_idx + 1 >= size()) {
+                return false;
+            }
+        }
     }
     else {
         phrases.at(phrase_idx).add_error(symbol_idx);
