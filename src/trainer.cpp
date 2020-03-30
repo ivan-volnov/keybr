@@ -85,23 +85,29 @@ void Trainer::fetch(uint32_t count)
         ids.push_back(id);
         deck.phrases.push_back({id, sql.get_string(), sql.get_string()});
     }
-    sql.reset();
-    sql << "SELECT phrase_id, pos, errors, delay\n"
-           "FROM keybr_stats\n"
-           "WHERE phrase_id IN";
-    sql.add_array(ids.size());
-    for (const auto id : ids) {
-        sql.bind(id);
-    }
-    while (sql.step()) {
-        auto phrase_id = sql.get_uint64();
-        for (auto &phrase : deck.phrases) {
-            if (phrase.id != phrase_id) {
-                continue;
+    size_t len;
+    const size_t chunk_size = 1000;
+    for (auto it = ids.begin(); it != ids.end(); ++it) {
+        sql.reset();
+        sql << "SELECT phrase_id, pos, errors, delay\n"
+               "FROM keybr_stats\n"
+               "WHERE phrase_id IN";
+        auto it_tmp = it;
+        for (len = 0; len < chunk_size && it_tmp != ids.end(); ++len, ++it_tmp);
+        sql.add_array(len);
+        for (len = 0; len < chunk_size && it != ids.end(); ++len, ++it) {
+            sql.bind(*it);
+        }
+        while (sql.step()) {
+            const auto phrase_id = sql.get_uint64();
+            for (auto &phrase : deck.phrases) {
+                if (phrase.id != phrase_id) {
+                    continue;
+                }
+                auto &stat = phrase.stats[sql.get_uint64()];
+                stat.avg_errors.add(sql.get_uint64());
+                stat.avg_delay.add(sql.get_uint64());
             }
-            auto &stat = phrase.stats[sql.get_uint64()];
-            stat.avg_errors.add(sql.get_uint64());
-            stat.avg_delay.add(sql.get_uint64());
         }
     }
 }
