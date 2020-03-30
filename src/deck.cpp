@@ -33,16 +33,13 @@ bool Phrase::has_current_errors() const
     return false;
 }
 
-double Phrase::avg_errors() const
+int64_t Phrase::errors() const
 {
-    Average<double> avg;
+    int64_t result = 0;
     for (const auto &stat : stats) {
-        avg.add(stat.second.avg_errors);
-        if (stat.second.current_errors > 0) {
-            avg.add(stat.second.current_errors);
-        }
+        result += stat.second.errors + stat.second.current_errors;
     }
-    return avg.value();
+    return result;
 }
 
 char Phrase::get_symbol(int64_t pos) const

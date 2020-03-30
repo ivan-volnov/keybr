@@ -55,6 +55,7 @@ void Trainer::load()
 {
     fetch(1, true);
     fetch(59);
+    deck.shuffle();
 }
 
 void Trainer::import(const std::string &filename)
@@ -127,7 +128,7 @@ void Trainer::fetch(uint32_t count, bool revise)
                     continue;
                 }
                 auto &stat = phrase.stats[sql.get_uint64()];
-                stat.avg_errors.add(sql.get_int64());
+                stat.errors += sql.get_int64();
                 stat.avg_delay.add(sql.get_uint64());
             }
         }
@@ -141,14 +142,14 @@ void Trainer::save(Phrase &phrase)
     sql << "INSERT INTO keybr_stats (phrase_id, pos, errors, delay) VALUES";
     sql.add_array(4);
     for (auto &stat : phrase.stats) {
-        const int64_t errors = phrase.is_revision && !stat.second.current_errors ? -1 : stat.second.current_errors;
+        const int64_t errors = phrase.is_revision && !stat.second.current_errors && stat.second.errors >= 1 ? -1 : stat.second.current_errors;
         sql.clear_bindings();
         sql.bind(phrase.id);
         sql.bind(stat.first);
         sql.bind(errors);
         sql.bind(stat.second.current_delay);
         sql.step();
-        stat.second.avg_errors.add(errors);
+        stat.second.errors += errors;
         stat.second.avg_delay.add(stat.second.current_delay);
         stat.second.current_errors = 0;
         stat.second.current_delay = 0;
@@ -162,16 +163,22 @@ bool Trainer::process_key(int key, bool &repaint_panel)
     }
     auto transaction = database->begin_transaction();
     size_t erased = 0;
+    bool has_revision = false;
     for (auto phrase = deck.phrases.begin(); phrase != deck.phrases.end();) {
         save(*phrase);
-        if (phrase->avg_errors() > 0) {
+        if (phrase->errors() > 0) {
             phrase->is_revision = true;
             ++phrase;
+            has_revision = true;
         }
         else {
             phrase = deck.phrases.erase(phrase);
             ++erased;
         }
+    }
+    if (erased > 1 && !has_revision) {
+        fetch(1, true);
+        --erased;
     }
     fetch(erased);
     if (deck.phrases.empty()) {
