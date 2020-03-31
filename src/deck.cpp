@@ -53,7 +53,7 @@ void Phrase::add_stat(int64_t pos, int64_t errors, int64_t delay)
 {
     auto &stat = stats[pos];
     stat.current_errors += errors;
-    if (errors < 0) {
+    if (errors < 0 && delay < 1500000) {
         stat.current_delay.add(delay);
     }
 }
@@ -111,10 +111,14 @@ bool Deck::process_key(int key, bool &repaint_panel, int64_t delay)
             // on the last symbol of the phrase
             repaint_panel = true;
             if (phrase_idx + 1 >= size()) {
+                // on the last phrase
                 phrases.at(phrase_idx).add_stat(idx, 0, delay);
                 return false;
             }
         }
+    }
+    else if (!phrase_idx && !symbol_idx && key == ' ') {
+        // ignore space error on the first symbol of the first phrase
     }
     else {
         errors = 1;
