@@ -30,11 +30,11 @@ bool Phrase::has_current_errors() const
     return false;
 }
 
-int64_t Phrase::errors() const
+int64_t Phrase::cumulative_errors() const
 {
     int64_t result = 0;
     for (const auto &stat : stats) {
-        result += stat.second.errors + stat.second.current_errors;
+        result += stat.second.cumulative_errors + stat.second.current_errors;
     }
     return result;
 }

@@ -16,10 +16,10 @@ class Phrase
 
     struct Stats
     {
-        int64_t errors;
+        int64_t cumulative_errors = 0;
         Average<uint64_t> avg_delay;
-        int64_t current_errors{};
-        Average<uint64_t> current_delay{};
+        int64_t current_errors = 0;
+        Average<uint64_t> current_delay;
     };
 
 public:
@@ -28,7 +28,7 @@ public:
 
     int64_t current_errors(int64_t pos) const;
     bool has_current_errors() const;
-    int64_t errors() const;
+    int64_t cumulative_errors() const;
 
     char get_symbol(int64_t pos) const;
     const std::string &get_translation() const;

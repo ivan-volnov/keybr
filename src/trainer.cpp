@@ -166,6 +166,16 @@ uint64_t Trainer::fetch(uint64_t count, bool revise)
         ids.push_back(id);
         deck.phrases.push_back({id, sql.get_string(), sql.get_string(), revise});
     }
+    if (ids.empty()) {
+        return 0;
+    }
+    load_stats(ids);
+    return ids.size();
+}
+
+void Trainer::load_stats(const std::vector<uint64_t> &ids)
+{
+    auto sql = database->create_query();
     auto sql_inserter = database->create_query();
     for (size_t i = 0; i < ids.size();) {
         const auto chunk_size = std::min(ids.size() - i, static_cast<size_t>(1000));
@@ -186,7 +196,7 @@ uint64_t Trainer::fetch(uint64_t count, bool revise)
                     continue;
                 }
                 auto &stat = phrase.stats[sql.get_int64()];
-                stat.errors += sql.get_int64();
+                stat.cumulative_errors += sql.get_int64();
                 const auto delay = sql.get_uint64();
                 if (delay) {
                     stat.avg_delay.add(delay);
@@ -195,7 +205,6 @@ uint64_t Trainer::fetch(uint64_t count, bool revise)
         }
         sql_inserter.step();
     }
-    return ids.size();
 }
 
 void Trainer::save(Phrase &phrase)
@@ -204,7 +213,7 @@ void Trainer::save(Phrase &phrase)
     sql << "INSERT INTO keybr_stats (phrase_id, pos, errors, delay, ch) VALUES";
     sql.add_array(5);
     for (auto &stat : phrase.stats) {
-        const int64_t errors = phrase.is_revision && !stat.second.current_errors && stat.second.errors >= 1 ? -1 : stat.second.current_errors;
+        const int64_t errors = phrase.is_revision && !stat.second.current_errors && stat.second.cumulative_errors >= 1 ? -1 : stat.second.current_errors;
         const uint64_t delay = stat.second.current_delay.value();
         stat.second.current_errors = 0;
         stat.second.current_delay.reset();
@@ -218,7 +227,7 @@ void Trainer::save(Phrase &phrase)
         sql.bind(delay);
         sql.bind(std::string(1, phrase.get_symbol(stat.first)));
         sql.step();
-        stat.second.errors += errors;
+        stat.second.cumulative_errors += errors;
         if (delay) {
             stat.second.avg_delay.add(delay);
         }
@@ -274,7 +283,7 @@ bool Trainer::process_key(int key, bool &repaint_panel)
     bool has_revision = false;
     for (auto phrase = deck.phrases.begin(); phrase != deck.phrases.end();) {
         save(*phrase);
-        if (phrase->errors() > 0) {
+        if (phrase->cumulative_errors() > 0) {
             phrase->is_revision = true;
             ++phrase;
             has_revision = true;
