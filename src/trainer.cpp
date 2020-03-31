@@ -70,28 +70,6 @@ void Trainer::set_sound_enabled(bool value)
     speech = value ? std::make_unique<SpeechEngine>() : nullptr;
 }
 
-uint64_t Trainer::import(const std::string &filename)
-{
-    std::ifstream file(filename);
-    if (!file.is_open()) {
-        throw std::runtime_error("Couldn't open import file");
-    }
-    nlohmann::json json;
-    file >> json;
-    auto transaction = database->begin_transaction();
-    const auto count = count_db_phrases();
-    auto sql = database->create_query();
-    sql << "INSERT OR IGNORE INTO keybr_phrases (phrase, translation) VALUES";
-    sql.add_array(2);
-    for (auto &card : json) {
-        sql.clear_bindings();
-        sql.bind(card.at("keyword").get<std::string>());
-        sql.bind(card.at("translation").get<std::string>());
-        sql.step();
-    }
-    return count_db_phrases() - count;
-}
-
 void string_replace(std::string &str, const std::string &from, const std::string &to)
 {
     if (const auto pos = str.find(from); pos != std::string::npos) {

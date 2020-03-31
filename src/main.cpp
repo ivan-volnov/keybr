@@ -24,8 +24,6 @@ int main(int argc, char *argv[])
 {
     argparse::ArgumentParser program("keybr");
     program.add_argument("--import")
-           .help("Import cards from json file");
-    program.add_argument("--anki_import")
            .help("Import cards from anki")
            .default_value(false)
            .implicit_value(true);
@@ -41,19 +39,6 @@ int main(int argc, char *argv[])
         std::cerr << e.what() << std::endl;
         std::cout << program;
         return 1;
-    }
-
-    try {
-        const auto filename = program.get<std::string>("--import");
-        Trainer trainer;
-        std::cout << "Successfully imported " << trainer.import(filename) << " cards" << std::endl;
-        return 0;
-    }
-    catch (const std::logic_error &) {
-    }
-    catch (const std::exception &e) {
-        std::cerr << "Error: " << e.what() << std::endl;
-        return 0;
     }
 
     if (program["--anki_import"] == true) {
