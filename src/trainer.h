@@ -16,6 +16,7 @@ public:
 
     bool load();
     uint64_t anki_import();
+    void show_stats() const;
 
     bool process_key(int key, bool &repaint_panel);
 

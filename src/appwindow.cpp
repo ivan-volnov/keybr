@@ -8,8 +8,8 @@
 
 
 
-AppScreen::AppScreen(std::unique_ptr<Trainer> &&trainer) :
-    trainer(std::move(trainer))
+AppScreen::AppScreen(const std::shared_ptr<Trainer> &trainer) :
+    trainer(trainer)
 {
     setlocale(LC_ALL, "");
     initscr();

@@ -1,4 +1,5 @@
 #include "trainer.h"
+#include <iostream>
 #include <fstream>
 #include <regex>
 #include "sqlite_database.h"
@@ -97,6 +98,28 @@ uint64_t Trainer::anki_import()
         sql.step();
     }
     return count_db_phrases() - count;
+}
+
+void Trainer::show_stats() const
+{
+    auto sql = database->create_query();
+    sql << "SELECT\n"
+           "    round(avg(wpm), 2),\n"
+           "    round(avg(wpm) FILTER (WHERE date(create_date) = date('now')), 2)\n"
+           "FROM (\n"
+           "    SELECT\n"
+           "        row_number() OVER win AS row_number,\n"
+           "        create_date,\n"
+           "        60000000.0 / sum(delay) OVER win AS wpm\n"
+           "    FROM keybr_stats\n"
+           "    WHERE delay > 0\n"
+           "    AND errors <= 0\n"
+           "    WINDOW win AS (ORDER BY id ROWS 5 PRECEDING)\n"
+           ") a\n"
+           "WHERE row_number > 5";
+    sql.step();
+    std::cout << "All time Average Speed: " << sql.get_string() << " wpm" << std::endl;
+    std::cout << "Today Average Speed: " << sql.get_string() << " wpm" << std::endl;
 }
 
 uint64_t Trainer::fetch(uint64_t count, bool revise)
@@ -223,12 +246,13 @@ void Trainer::say_current_phrase() const
 bool Trainer::process_key(int key, bool &repaint_panel)
 {
     using namespace std::chrono;
-    const auto delay = key_ts.time_since_epoch().count() > 0 ? duration_cast<microseconds>(steady_clock::now() - key_ts).count() : 0;
+    const auto now = steady_clock::now();
+    const auto delay = key_ts.time_since_epoch().count() > 0 ? duration_cast<microseconds>(now - key_ts).count() : 0;
     if (deck.process_key(key, repaint_panel, delay)) {
         if (!deck.symbol_idx && repaint_panel) {
             say_current_phrase();
         }
-        key_ts = steady_clock::now();
+        key_ts = now;
         return true;
     }
     auto transaction = database->begin_transaction();

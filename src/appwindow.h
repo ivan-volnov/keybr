@@ -13,7 +13,7 @@ using WINDOW = struct _win_st;
 class AppScreen
 {
 public:
-    AppScreen(std::unique_ptr<Trainer> &&trainer);
+    AppScreen(const std::shared_ptr<Trainer> &trainer);
     ~AppScreen();
 
     void run();
@@ -26,7 +26,7 @@ private:
     std::unique_ptr<TranslationWindow> translation_window;
     std::unique_ptr<MainWindow> main_window;
 
-    std::unique_ptr<Trainer> trainer;
+    std::shared_ptr<Trainer> trainer;
 };
 
 #endif // APPWINDOW_H

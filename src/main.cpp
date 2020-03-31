@@ -23,7 +23,11 @@ bool AmIBeingDebugged()
 void run_app(argparse::ArgumentParser &program)
 {
     Config::instance().read(program);
-    auto trainer = std::make_unique<Trainer>();
+    auto trainer = std::make_shared<Trainer>();
+    if (program["--stats"] == true) {
+        trainer->show_stats();
+        return;
+    }
     if (program["--import"] == true) {
         std::cout << "Successfully imported " << trainer->anki_import() << " cards" << std::endl;
         return;
@@ -32,8 +36,11 @@ void run_app(argparse::ArgumentParser &program)
         std::cout << "No cards to study. Please import some" << std::endl;
         return;
     }
-    AppScreen app(std::move(trainer));
-    app.run();
+    {
+        AppScreen app(std::move(trainer));
+        app.run();
+    }
+    trainer->show_stats();
 }
 
 
@@ -46,6 +53,10 @@ int main(int argc, char *argv[])
            .implicit_value(true);
     program.add_argument("--sound")
            .help("Read aloud the current phrase")
+           .default_value(false)
+           .implicit_value(true);
+    program.add_argument("--stats")
+           .help("Show stats")
            .default_value(false)
            .implicit_value(true);
 
