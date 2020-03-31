@@ -188,6 +188,15 @@ bool Query::is_null() const noexcept
     return sqlite3_column_type(stmt, col_idx) == SQLITE_NULL;
 }
 
+Query &Query::skip() MAYTHROW
+{
+    if (col_idx >= col_count) {
+        throw DatabaseException("Column is out of range");
+    }
+    ++col_idx;
+    return *this;
+}
+
 std::string Query::get_string() MAYTHROW
 {
     if (col_idx >= col_count) {

@@ -56,6 +56,7 @@ public:
     Query &clear_bindings() noexcept;
 
     bool is_null() const noexcept;
+    Query &skip() MAYTHROW;
     std::string get_string() MAYTHROW;
     int32_t get_int32() MAYTHROW;
     uint32_t get_uint32() MAYTHROW;

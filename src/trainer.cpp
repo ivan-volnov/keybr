@@ -56,7 +56,9 @@ Trainer::Trainer() :
 
 bool Trainer::load()
 {
-    fetch(10 - fetch(1, true));
+    const uint64_t revisions = 10;
+    const uint64_t total_phrases = 10;
+    fetch(total_phrases - fetch(revisions, true));
     if (!deck.size()) {
         return false;
     }
@@ -121,9 +123,14 @@ void Trainer::show_stats() const
            ") a\n"
            "WHERE row_number > 5";
     sql.step();
-    std::cout << "\n- Today:" << std::endl;
-    std::cout << "    Average Speed: " << sql.get_string() << " wpm" << std::endl;
-    std::cout << "    Total Time: " << sql.get_string() << std::endl;
+    if (sql.is_null()) {
+        sql.skip().skip();
+    }
+    else {
+        std::cout << "\n- Today:" << std::endl;
+        std::cout << "    Average Speed: " << sql.get_string() << " wpm" << std::endl;
+        std::cout << "    Total Time: " << sql.get_string() << std::endl;
+    }
     std::cout << "\n- All time:" << std::endl;
     std::cout << "    Average Speed: " << sql.get_string() << " wpm" << std::endl;
     std::cout << "    Total Time: " << sql.get_string() << std::endl;
