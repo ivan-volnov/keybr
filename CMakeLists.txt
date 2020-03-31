@@ -24,3 +24,8 @@ target_link_libraries(${PROJECT_NAME}
     curl
     "-framework ApplicationServices"
 )
+
+install (TARGETS
+    ${PROJECT_NAME}
+    RUNTIME DESTINATION bin
+)
