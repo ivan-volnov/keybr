@@ -104,12 +104,15 @@ void Trainer::show_stats() const
 {
     auto sql = database->create_query();
     sql << "SELECT\n"
+           "    round(avg(wpm) FILTER (WHERE today), 2),\n"
+           "    time(sum(delay) FILTER (WHERE today) / 1000000, 'unixepoch'),\n"
            "    round(avg(wpm), 2),\n"
-           "    round(avg(wpm) FILTER (WHERE date(create_date) = date('now')), 2)\n"
+           "    time(sum(delay) / 1000000, 'unixepoch')\n"
            "FROM (\n"
            "    SELECT\n"
            "        row_number() OVER win AS row_number,\n"
-           "        create_date,\n"
+           "        date(create_date, 'localtime') = date('now', 'localtime') AS today,\n"
+           "        delay,\n"
            "        60000000.0 / sum(delay) OVER win AS wpm\n"
            "    FROM keybr_stats\n"
            "    WHERE delay > 0\n"
@@ -118,8 +121,12 @@ void Trainer::show_stats() const
            ") a\n"
            "WHERE row_number > 5";
     sql.step();
-    std::cout << "All time Average Speed: " << sql.get_string() << " wpm" << std::endl;
-    std::cout << "Today Average Speed: " << sql.get_string() << " wpm" << std::endl;
+    std::cout << "\n- Today:" << std::endl;
+    std::cout << "    Average Speed: " << sql.get_string() << " wpm" << std::endl;
+    std::cout << "    Total Time: " << sql.get_string() << std::endl;
+    std::cout << "\n- All time:" << std::endl;
+    std::cout << "    Average Speed: " << sql.get_string() << " wpm" << std::endl;
+    std::cout << "    Total Time: " << sql.get_string() << std::endl;
 }
 
 uint64_t Trainer::fetch(uint64_t count, bool revise)
