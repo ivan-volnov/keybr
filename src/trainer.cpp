@@ -1,5 +1,6 @@
 #include "trainer.h"
 #include <fstream>
+#include <regex>
 #include "sqlite_database.h"
 #include "anki_client.h"
 #include "config.h"
@@ -61,7 +62,7 @@ bool Trainer::load()
     deck.shuffle();
     if (Config::instance().is_sound_enabled()) {
         speech = std::make_unique<SpeechEngine>();
-        speech->say(deck.current_phrase().phrase);
+        say_current_phrase();
     }
     return true;
 }
@@ -195,15 +196,37 @@ uint64_t Trainer::count_db_phrases() const
     return sql.get_uint64();
 }
 
+void Trainer::say_current_phrase() const
+{
+    if (!speech) {
+        return;
+    }
+    auto phrase = deck.current_phrase().phrase;
+    phrase = std::regex_replace(phrase, std::regex("\\bsb\\b"), "somebody");
+    phrase = std::regex_replace(phrase, std::regex("\\bsth\\b"), "something");
+    phrase = std::regex_replace(phrase, std::regex("\\bswh\\b"), "somewhere");
+    if (phrase != "or" &&
+        phrase != "believe it or not" &&
+        phrase != "or so" &&
+        phrase != "more or less")
+    {
+        phrase = std::regex_replace(phrase, std::regex("\\bor\\b"), ",");
+    }
+    string_replace(phrase, "(", "");
+    string_replace(phrase, ")", "");
+    if (phrase == "read, read, read") {
+        phrase = "read, red, red";
+    }
+    speech->say(phrase);
+}
+
 bool Trainer::process_key(int key, bool &repaint_panel)
 {
     using namespace std::chrono;
     const auto delay = key_ts.time_since_epoch().count() > 0 ? duration_cast<microseconds>(steady_clock::now() - key_ts).count() : 0;
     if (deck.process_key(key, repaint_panel, delay)) {
         if (!deck.symbol_idx && repaint_panel) {
-            if (speech) {
-                speech->say(deck.current_phrase().phrase);
-            }
+            say_current_phrase();
         }
         key_ts = steady_clock::now();
         return true;
@@ -234,9 +257,7 @@ bool Trainer::process_key(int key, bool &repaint_panel)
     deck.symbol_idx = 0;
     deck.shuffle();
     key_ts = {};
-    if (speech) {
-        speech->say(deck.current_phrase().phrase);
-    }
+    say_current_phrase();
     return true;
 }
 

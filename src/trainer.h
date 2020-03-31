@@ -25,6 +25,7 @@ private:
     uint64_t fetch(uint64_t count, bool revise = false);
     void save(Phrase &phrase);
     uint64_t count_db_phrases() const;
+    void say_current_phrase() const;
 
 private:
     std::shared_ptr<SqliteDatabase> database;
