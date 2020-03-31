@@ -53,7 +53,9 @@ void Phrase::add_stat(int64_t pos, int64_t errors, int64_t delay)
 {
     auto &stat = stats[pos];
     stat.current_errors += errors;
-    stat.current_delay.add(delay);
+    if (errors < 0) {
+        stat.current_delay.add(delay);
+    }
 }
 
 size_t Deck::size() const
