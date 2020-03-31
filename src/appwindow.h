@@ -13,12 +13,10 @@ using WINDOW = struct _win_st;
 class AppScreen
 {
 public:
-    AppScreen();
+    AppScreen(std::unique_ptr<Trainer> &&trainer);
     ~AppScreen();
 
     void run();
-
-    void set_sound_enabled(bool value);
 
 private:
     void paint();

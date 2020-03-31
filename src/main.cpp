@@ -4,6 +4,7 @@
 #include <sys/sysctl.h>
 #include "3rdparty/argparse.hpp"
 #include "trainer.h"
+#include "config.h"
 
 
 
@@ -18,6 +19,22 @@ bool AmIBeingDebugged()
     return ok && (info.kp_proc.p_flag & P_TRACED) != 0;
 }
 
+
+void run_app(argparse::ArgumentParser &program)
+{
+    Config::instance().read(program);
+    auto trainer = std::make_unique<Trainer>();
+    if (program["--import"] == true) {
+        std::cout << "Successfully imported " << trainer->anki_import() << " cards" << std::endl;
+        return;
+    }
+    if (!trainer->load()) {
+        std::cout << "No cards to study. Please import some" << std::endl;
+        return;
+    }
+    AppScreen app(std::move(trainer));
+    app.run();
+}
 
 
 int main(int argc, char *argv[])
@@ -41,27 +58,12 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    if (program["--anki_import"] == true) {
-        try {
-            Trainer trainer;
-            std::cout << "Successfully imported " << trainer.anki_import() << " cards" << std::endl;
-        }
-        catch (const std::exception &e) {
-            std::cerr << "Error: " << e.what() << std::endl;
-        }
-        return 0;
-    }
-
     if (AmIBeingDebugged()) {
-        AppScreen app;
-        app.set_sound_enabled(program["--sound"] == true);
-        app.run();
+        run_app(program);
     }
     else {
         try {
-            AppScreen app;
-            app.set_sound_enabled(program["--sound"] == true);
-            app.run();
+            run_app(program);
         }
         catch (const std::exception &e) {
             std::cerr << "Error: " << e.what() << std::endl;

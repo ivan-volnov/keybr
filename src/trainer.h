@@ -15,7 +15,6 @@ public:
     Trainer();
 
     bool load();
-    void set_sound_enabled(bool value);
     uint64_t anki_import();
 
     bool process_key(int key, bool &repaint_panel);

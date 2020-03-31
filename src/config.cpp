@@ -1,6 +1,7 @@
 #include "config.h"
 #include <unistd.h>
 #include <pwd.h>
+#include "3rdparty/argparse.hpp"
 
 
 Config::Config()
@@ -15,6 +16,11 @@ Config::Config()
     }
 }
 
+bool Config::is_sound_enabled() const
+{
+    return sound_enabled;
+}
+
 Config &Config::instance()
 {
     static Config _instance;
@@ -24,4 +30,9 @@ Config &Config::instance()
 std::filesystem::path Config::get_app_path() const
 {
     return app_path;
+}
+
+void Config::read(argparse::ArgumentParser &program)
+{
+    sound_enabled = program["--sound"] == true;
 }

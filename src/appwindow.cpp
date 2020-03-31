@@ -8,7 +8,8 @@
 
 
 
-AppScreen::AppScreen()
+AppScreen::AppScreen(std::unique_ptr<Trainer> &&trainer) :
+    trainer(std::move(trainer))
 {
     setlocale(LC_ALL, "");
     initscr();
@@ -20,8 +21,6 @@ AppScreen::AppScreen()
     bkgd(COLOR_PAIR(ColorScheme::ColorWindow));
     translation_window = std::make_unique<TranslationWindow>();
     main_window = std::make_unique<MainWindow>();
-
-    trainer = std::make_unique<Trainer>();
 }
 
 AppScreen::~AppScreen()
@@ -34,9 +33,6 @@ AppScreen::~AppScreen()
 
 void AppScreen::run()
 {
-    if (!trainer->load()) {
-        return;
-    }
     paint();
     int key, height, width;
     bool repaint_panel;
@@ -70,11 +66,6 @@ void AppScreen::run()
             break;
         }
     }
-}
-
-void AppScreen::set_sound_enabled(bool value)
-{
-    trainer->set_sound_enabled(value);
 }
 
 void AppScreen::paint()

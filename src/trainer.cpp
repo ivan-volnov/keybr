@@ -59,15 +59,11 @@ bool Trainer::load()
         return false;
     }
     deck.shuffle();
-    if (speech) {
+    if (Config::instance().is_sound_enabled()) {
+        speech = std::make_unique<SpeechEngine>();
         speech->say(deck.current_phrase().phrase);
     }
     return true;
-}
-
-void Trainer::set_sound_enabled(bool value)
-{
-    speech = value ? std::make_unique<SpeechEngine>() : nullptr;
 }
 
 void string_replace(std::string &str, const std::string &from, const std::string &to)
