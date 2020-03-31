@@ -16,7 +16,8 @@ public:
 
     bool load();
     void set_sound_enabled(bool value);
-    void import(const std::string &filename);
+    uint64_t import(const std::string &filename);
+    uint64_t anki_import();
 
     bool process_key(int key, bool &repaint_panel);
 
@@ -25,6 +26,7 @@ public:
 private:
     uint64_t fetch(uint64_t count, bool revise = false);
     void save(Phrase &phrase);
+    uint64_t count_db_phrases() const;
 
 private:
     std::shared_ptr<SqliteDatabase> database;

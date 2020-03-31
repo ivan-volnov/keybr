@@ -1,7 +1,7 @@
 #include "trainer.h"
 #include <fstream>
-#include "3rdparty/json.hpp"
 #include "sqlite_database.h"
+#include "anki_client.h"
 #include "config.h"
 
 
@@ -70,7 +70,7 @@ void Trainer::set_sound_enabled(bool value)
     speech = value ? std::make_unique<SpeechEngine>() : nullptr;
 }
 
-void Trainer::import(const std::string &filename)
+uint64_t Trainer::import(const std::string &filename)
 {
     std::ifstream file(filename);
     if (!file.is_open()) {
@@ -79,15 +79,49 @@ void Trainer::import(const std::string &filename)
     nlohmann::json json;
     file >> json;
     auto transaction = database->begin_transaction();
+    const auto count = count_db_phrases();
     auto sql = database->create_query();
     sql << "INSERT OR IGNORE INTO keybr_phrases (phrase, translation) VALUES";
     sql.add_array(2);
     for (auto &card : json) {
         sql.clear_bindings();
-        sql.bind(card["keyword"].get<std::string>());
-        sql.bind(card["translation"].get<std::string>());
+        sql.bind(card.at("keyword").get<std::string>());
+        sql.bind(card.at("translation").get<std::string>());
         sql.step();
     }
+    return count_db_phrases() - count;
+}
+
+void string_replace(std::string &str, const std::string &from, const std::string &to)
+{
+    if (const auto pos = str.find(from); pos != std::string::npos) {
+        str.erase(pos, from.size());
+        str.insert(pos, to);
+    }
+}
+
+uint64_t Trainer::anki_import()
+{
+    AnkiClient anki;
+    auto notes = anki.request("findNotes", {{"query", "\"deck:En::Vocabulary Profile\" is:due -is:new -is:suspended"}});
+    notes = anki.request("notesInfo", {{"notes", std::move(notes)}});
+    auto transaction = database->begin_transaction();
+    const auto count = count_db_phrases();
+    auto sql = database->create_query();
+    sql << "INSERT OR IGNORE INTO keybr_phrases (phrase, translation) VALUES";
+    sql.add_array(2);
+    for (const auto &note : notes) {
+        const auto &fields = note.at("fields");
+        auto phrase = fields.at("Front").at("value").get<std::string>();
+        auto translation = fields.at("Back").at("value").get<std::string>();
+        string_replace(phrase, ", etc.", "");
+        string_replace(phrase, ", etc", "");
+        sql.clear_bindings();
+        sql.bind(phrase);
+        sql.bind(translation);
+        sql.step();
+    }
+    return count_db_phrases() - count;
 }
 
 uint64_t Trainer::fetch(uint64_t count, bool revise)
@@ -177,6 +211,14 @@ void Trainer::save(Phrase &phrase)
             stat.second.avg_delay.add(delay);
         }
     }
+}
+
+uint64_t Trainer::count_db_phrases() const
+{
+    auto sql = database->create_query();
+    sql << "SELECT count(*) FROM keybr_phrases";
+    sql.step();
+    return sql.get_uint64();
 }
 
 bool Trainer::process_key(int key, bool &repaint_panel)

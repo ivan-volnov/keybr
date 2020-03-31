@@ -25,10 +25,14 @@ int main(int argc, char *argv[])
     argparse::ArgumentParser program("keybr");
     program.add_argument("--import")
            .help("Import cards from json file");
+    program.add_argument("--anki_import")
+           .help("Import cards from anki")
+           .default_value(false)
+           .implicit_value(true);
     program.add_argument("--sound")
-      .help("Read aloud the current phrase")
-      .default_value(false)
-      .implicit_value(true);
+           .help("Read aloud the current phrase")
+           .default_value(false)
+           .implicit_value(true);
 
     try {
         program.parse_args(argc, argv);
@@ -40,15 +44,26 @@ int main(int argc, char *argv[])
     }
 
     try {
+        const auto filename = program.get<std::string>("--import");
         Trainer trainer;
-        trainer.import(program.get<std::string>("--import"));
-        std::cout << "Done" << std::endl;
+        std::cout << "Successfully imported " << trainer.import(filename) << " cards" << std::endl;
         return 0;
     }
     catch (const std::logic_error &) {
     }
     catch (const std::exception &e) {
         std::cerr << "Error: " << e.what() << std::endl;
+        return 0;
+    }
+
+    if (program["--anki_import"] == true) {
+        try {
+            Trainer trainer;
+            std::cout << "Successfully imported " << trainer.anki_import() << " cards" << std::endl;
+        }
+        catch (const std::exception &e) {
+            std::cerr << "Error: " << e.what() << std::endl;
+        }
         return 0;
     }
 
