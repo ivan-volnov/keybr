@@ -280,6 +280,11 @@ bool Trainer::process_key(int key, bool &repaint_panel)
         key_ts = now;
         return true;
     }
+    return load_more_samples();
+}
+
+bool Trainer::load_more_samples()
+{
     auto transaction = database->begin_transaction();
     size_t erased = 0;
     bool has_revision = false;

@@ -26,6 +26,7 @@ public:
 private:
     uint64_t fetch(uint64_t count, bool revise = false);
     void load_stats(const std::vector<uint64_t> &ids);
+    bool load_more_samples();
     void save(Phrase &phrase);
     uint64_t count_db_phrases() const;
     void say_current_phrase() const;
