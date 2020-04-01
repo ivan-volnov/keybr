@@ -12,6 +12,7 @@ cd build/
 cmake ..
 make install
 ```
+It installs into /usr/local/bin directory
 
 ### Anki preparation:
 - Install [AnkiConnect](https://ankiweb.net/shared/info/2055492159) plugin
