@@ -38,6 +38,9 @@ public:
         return *this;
     }
 
+    Query &add_array(size_t columns) MAYTHROW;
+    Query &add_array(size_t columns, size_t rows) MAYTHROW;
+
     Query &bind(const char *str, bool constant = false) MAYTHROW;
     Query &bind(const std::string &str, bool constant = false) MAYTHROW;
     Query &bind(int32_t value) MAYTHROW;
@@ -48,9 +51,6 @@ public:
 
     bool step() MAYTHROW;
     static Query &step(Query &query) MAYTHROW;
-
-    void add_array(size_t columns) MAYTHROW;
-    void add_array(size_t columns, size_t rows) MAYTHROW;
 
     Query &reset() noexcept;
     Query &clear_bindings() noexcept;

@@ -39,6 +39,29 @@ Query &Query::operator<<(const std::string &value)
     return *this;
 }
 
+Query &Query::add_array(size_t columns) MAYTHROW
+{
+    if (!ss.str().empty()) {
+        ss << ' ';
+    }
+    for (size_t i = 0; i < columns; ++i) {
+        ss << (i ? ",?" : "(?");
+    }
+    ss << ')';
+    return *this;
+}
+
+Query &Query::add_array(size_t columns, size_t rows) MAYTHROW
+{
+    for (size_t i = 0; i < rows; ++i) {
+        if (i) {
+            ss << ',';
+        }
+        add_array(columns);
+    }
+    return *this;
+}
+
 void Query::prepare() MAYTHROW
 {
     if (sqlite3_prepare_v2(database->db, ss.str().c_str(), ss.str().size(), &stmt, nullptr) != SQLITE_OK) {
@@ -135,27 +158,6 @@ Query &Query::step(Query &query) MAYTHROW
 {
     query.step();
     return query;
-}
-
-void Query::add_array(size_t columns) MAYTHROW
-{
-    if (!ss.str().empty()) {
-        ss << ' ';
-    }
-    for (size_t i = 0; i < columns; ++i) {
-        ss << (i ? ",?" : "(?");
-    }
-    ss << ')';
-}
-
-void Query::add_array(size_t columns, size_t rows) MAYTHROW
-{
-    for (size_t i = 0; i < rows; ++i) {
-        if (i) {
-            ss << ',';
-        }
-        add_array(columns);
-    }
 }
 
 

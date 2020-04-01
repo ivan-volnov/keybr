@@ -88,8 +88,9 @@ uint64_t Trainer::anki_import()
     auto transaction = database->begin_transaction();
     const auto count = count_db_phrases();
     auto sql = database->create_query();
-    sql << "INSERT OR IGNORE INTO keybr_phrases (phrase, translation) VALUES";
-    sql.add_array(2);
+    sql << "INSERT INTO keybr_phrases (phrase, translation) VALUES";
+    sql.add_array(2) << "\n";
+    sql << "ON CONFLICT (phrase) DO UPDATE SET translation = excluded.translation";
     for (const auto &note : notes) {
         const auto &fields = note.at("fields");
         auto phrase = fields.at("Front").at("value").get<std::string>();
