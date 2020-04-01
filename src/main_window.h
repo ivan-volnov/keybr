@@ -6,7 +6,7 @@
 
 struct _win_st;
 using WINDOW = struct _win_st;
-class Deck;
+class TrainerDeck;
 struct Symbol;
 typedef unsigned int chtype;
 
@@ -19,7 +19,7 @@ public:
 
 public:
     void resize(int height, int width);
-    void paint(const Deck &deck);
+    void paint(const TrainerDeck &deck);
 
 private:
     void paint(chtype ch, uint64_t errors, bool is_grey);

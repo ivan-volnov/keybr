@@ -1,7 +1,7 @@
 #include "translation_window.h"
 #include <ncurses.h>
 #include "color_scheme.h"
-#include "deck.h"
+#include "trainer.h"
 
 constexpr auto translation_h = 1;
 constexpr auto translation_border = 1;
@@ -27,7 +27,7 @@ void TranslationWindow::resize(int height, int width)
     mvwin(window, height - translation_h, translation_border);
 }
 
-void TranslationWindow::paint(const Deck &deck)
+void TranslationWindow::paint(const TrainerDeck &deck)
 {
     wclear(window);
     waddnstr(window, deck.current_phrase().get_translation().c_str(), -1);

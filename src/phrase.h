@@ -1,8 +1,7 @@
-#ifndef DECK_H
-#define DECK_H
+#ifndef PHRASE_h
+#define PHRASE_h
 
 #include <string>
-#include <vector>
 #include <map>
 #include "utility/average.h"
 
@@ -45,22 +44,4 @@ private:
 
 
 
-class Deck
-{
-public:
-    size_t phrase_count() const;
-    char current_symbol() const;
-    const Phrase &current_phrase() const;
-    const Phrase &get_phrase(int64_t idx) const;
-    int64_t get_symbol_idx() const;
-    int64_t get_phrase_idx() const;
-
-protected:
-    std::vector<Phrase> phrases;
-    int64_t symbol_idx = 0;
-    int64_t phrase_idx = 0;
-};
-
-
-
-#endif // DECK_H
+#endif // PHRASE_h

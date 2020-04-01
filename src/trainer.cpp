@@ -285,7 +285,7 @@ bool Trainer::process_key(int key, bool &repaint_panel)
         else if (++symbol_idx >= current_phrase().size()) {     // on the last symbol of the phrase
             if (phrase_idx + 1 >= phrase_count()) {             // on the last phrase
                 repaint_panel = true;
-                return load_more_samples();
+                return load_next_exercise();
             }
             symbol_idx = -1;
         }
@@ -299,7 +299,7 @@ bool Trainer::process_key(int key, bool &repaint_panel)
     return true;
 }
 
-bool Trainer::load_more_samples()
+bool Trainer::load_next_exercise()
 {
     auto transaction = database->begin_transaction();
     size_t erased = 0;
@@ -325,8 +325,8 @@ bool Trainer::load_more_samples()
     }
     phrase_idx = 0;
     symbol_idx = 0;
-    std::shuffle(phrases.begin(), phrases.end(), random_generator);
     key_ts = {};
+    std::shuffle(phrases.begin(), phrases.end(), random_generator);
     say_current_phrase();
     return true;
 }

@@ -1,7 +1,7 @@
 #include "main_window.h"
 #include <ncurses.h>
 #include "color_scheme.h"
-#include "deck.h"
+#include "trainer.h"
 
 
 constexpr uint64_t border_h = 3;
@@ -27,7 +27,7 @@ void MainWindow::resize(int height, int width)
     wresize(window, height - border_h * 2 - translation_h, width - border_w * 2);
 }
 
-void MainWindow::paint(const Deck &deck)
+void MainWindow::paint(const TrainerDeck &deck)
 {
     const auto width = getmaxx(window);
     wclear(window);

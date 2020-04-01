@@ -68,7 +68,7 @@ void AppScreen::run()
     }
 }
 
-void AppScreen::paint(const Deck &deck)
+void AppScreen::paint(const TrainerDeck &deck)
 {
     clear();
     int height, width;

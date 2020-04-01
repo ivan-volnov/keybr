@@ -1,4 +1,4 @@
-#include "deck.h"
+#include "phrase.h"
 
 
 
@@ -55,34 +55,4 @@ void Phrase::add_stat(int64_t pos, int64_t errors, int64_t delay)
     if (errors <= 0 && delay > 80000 && delay < 1500000) {
         stat.current_delay.add(delay);
     }
-}
-
-size_t Deck::phrase_count() const
-{
-    return phrases.size();
-}
-
-char Deck::current_symbol() const
-{
-    return phrases.at(phrase_idx).get_symbol(symbol_idx);
-}
-
-const Phrase &Deck::current_phrase() const
-{
-    return phrases.at(phrase_idx);
-}
-
-const Phrase &Deck::get_phrase(int64_t idx) const
-{
-    return phrases.at(idx);
-}
-
-int64_t Deck::get_symbol_idx() const
-{
-    return symbol_idx;
-}
-
-int64_t Deck::get_phrase_idx() const
-{
-    return phrase_idx;
 }
