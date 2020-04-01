@@ -1,5 +1,7 @@
 # keybr
-**keybr** is an advanced console keyboard trainer with language learning support. Just import your learning cards from [Anki](https://apps.ankiweb.net) and then use them for touch typing training. The app will track your typing errors and speed and choose phrases for repeating to force learning process.
+**keybr** is an advanced console keyboard trainer with language learning support. Just import your learning cards from [Anki](https://apps.ankiweb.net) and then use them for touch typing training. The app will track your typing speed and errors and choose phrases for repeating to force learning process. It also can read aloud current phrase.
+
+It supports only macOS. Other Operating Systems was not tested and aren't planned.
 
 ### Build:
 ```
@@ -13,12 +15,13 @@ make install
 - Install [AnkiConnect](https://ankiweb.net/shared/info/2055492159) plugin
 - Check your Note Type Fields. They must be **Front** and **Back**
 
+### Import cards from Anki:
+```
+keybr --import
+```
+
 ### Run:
 ```
-# import cards from Anki
-keybr --import
-
-# run the app
 keybr
 ```
 
