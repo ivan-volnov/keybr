@@ -1,4 +1,4 @@
-#include "appwindow.h"
+#include "app_screen.h"
 #include <ncurses.h>
 #include <locale.h>
 #include "translation_window.h"

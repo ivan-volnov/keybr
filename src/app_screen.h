@@ -1,5 +1,5 @@
-#ifndef APPWINDOW_H
-#define APPWINDOW_H
+#ifndef APP_SCREEN_H
+#define APP_SCREEN_H
 
 #include <memory>
 
@@ -29,4 +29,4 @@ private:
     std::shared_ptr<Trainer> trainer;
 };
 
-#endif // APPWINDOW_H
+#endif // APP_SCREEN_H
