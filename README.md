@@ -17,15 +17,11 @@ make install
 - Install [AnkiConnect](https://ankiweb.net/shared/info/2055492159) plugin
 - Check your Note Type Fields. They must be **Front** and **Back**
 
-### Import cards from Anki:
-```
-keybr --import
-```
-
 ### Import cards from Anki with custom query:
 ```
 keybr --import --anki_query "\"deck:En::Vocabulary Profile\" is:due -is:new -is:suspended"
 ```
+Use [Anki Searching Query Language](https://docs.ankiweb.net/#/searching). Before importing you can test the query in Anki's Browse screen
 
 ### Run:
 ```
