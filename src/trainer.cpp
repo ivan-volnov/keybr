@@ -2,8 +2,8 @@
 #include <iostream>
 #include <fstream>
 #include <regex>
-#include "sqlite_database.h"
-#include "anki_client.h"
+#include "utility/sqlite_database.h"
+#include "utility/anki_client.h"
 #include "config.h"
 
 

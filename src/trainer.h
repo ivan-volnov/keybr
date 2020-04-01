@@ -2,7 +2,7 @@
 #define TRAINER_H
 
 #include "deck.h"
-#include "speech_engine.h"
+#include "utility/speech_engine.h"
 #include <chrono>
 #include <random>
 

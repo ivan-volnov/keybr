@@ -2,7 +2,7 @@
 #define SQLITEDATABASE_H
 
 #include <sstream>
-#include "global.h"
+#include "../global.h"
 
 
 
