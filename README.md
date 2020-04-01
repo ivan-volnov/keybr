@@ -5,7 +5,7 @@
 
 It supports only **macOS**. Other operating systems was not tested and aren't planned.
 
-### Build:
+### Installation:
 ```
 mkdir build
 cd build/
