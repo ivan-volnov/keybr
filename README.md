@@ -3,7 +3,7 @@
 
 ![screen](https://raw.githubusercontent.com/ivan-volnov/keybr/master/img/screen.png)
 
-It supports only macOS. Other Operating Systems was not tested and aren't planned.
+It supports only **macOS**. Other operating systems was not tested and aren't planned.
 
 ### Build:
 ```
