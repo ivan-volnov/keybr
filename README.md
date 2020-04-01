@@ -35,4 +35,4 @@ Press escape to exit
 ```
 keybr --sound
 ```
-The app will read the current word
+The app will read aloud the current phrase while typing
