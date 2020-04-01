@@ -54,16 +54,16 @@ public:
 
     const Phrase &current_phrase() const;
     char current_symbol() const;
-    const Phrase &get_phrase(size_t idx) const;
-    size_t get_symbol_idx() const;
-    size_t get_phrase_idx() const;
+    const Phrase &get_phrase(int64_t idx) const;
+    int64_t get_symbol_idx() const;
+    int64_t get_phrase_idx() const;
 
     bool process_key(int key, bool &repaint_panel, int64_t delay);
 
 private:
     std::vector<Phrase> phrases;
-    size_t symbol_idx = 0;
-    size_t phrase_idx = 0;
+    int64_t symbol_idx = 0;
+    int64_t phrase_idx = 0;
 };
 
 

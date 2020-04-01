@@ -72,17 +72,17 @@ char Deck::current_symbol() const
     return phrases.at(phrase_idx).get_symbol(symbol_idx);
 }
 
-const Phrase &Deck::get_phrase(size_t idx) const
+const Phrase &Deck::get_phrase(int64_t idx) const
 {
     return phrases.at(idx);
 }
 
-size_t Deck::get_symbol_idx() const
+int64_t Deck::get_symbol_idx() const
 {
     return symbol_idx;
 }
 
-size_t Deck::get_phrase_idx() const
+int64_t Deck::get_phrase_idx() const
 {
     return phrase_idx;
 }
@@ -90,37 +90,25 @@ size_t Deck::get_phrase_idx() const
 bool Deck::process_key(int key, bool &repaint_panel, int64_t delay)
 {
     repaint_panel = false;
-    int64_t errors = 0;
-    int64_t idx = symbol_idx >= current_phrase().size() ? -1 : symbol_idx;
-    if (idx < 0) {
-        // on the space after the phrase
-        if (key == ' ') {
+    if (current_symbol() == key) {
+        phrases.at(phrase_idx).add_stat(symbol_idx, 0, delay);
+        if (symbol_idx < 0) {                                   // on the space after the phrase
             ++phrase_idx;
-            symbol_idx = 0;
+            ++symbol_idx;
             repaint_panel = true;
         }
-        else {
-            errors = 1;
-        }
-    }
-    else if (current_symbol() == key) {
-        // into the phrase
-        if (++symbol_idx == current_phrase().size()) {
-            // on the last symbol of the phrase
-            repaint_panel = true;
-            if (phrase_idx + 1 >= size()) {
-                // on the last phrase
-                phrases.at(phrase_idx).add_stat(idx, 0, delay);
+        else if (++symbol_idx >= current_phrase().size()) {     // on the last symbol of the phrase
+            if (phrase_idx + 1 >= size()) {                     // on the last phrase
+                repaint_panel = true;
                 return false;
             }
+            symbol_idx = -1;
         }
     }
-    else if (!phrase_idx && !symbol_idx && key == ' ') {
-        // ignore space error on the first symbol of the first phrase
+    else if (!phrase_idx && !symbol_idx && key == ' ') {        // ignore space error on the first symbol of the first phrase
     }
     else {
-        errors = 1;
+        phrases.at(phrase_idx).add_stat(symbol_idx, 1, 0);
     }
-    phrases.at(phrase_idx).add_stat(idx, errors, delay);
     return true;
 }

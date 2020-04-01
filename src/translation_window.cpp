@@ -30,8 +30,6 @@ void TranslationWindow::resize(int height, int width)
 void TranslationWindow::paint(const Deck &deck)
 {
     wclear(window);
-    if (deck.get_symbol_idx() < deck.current_phrase().size()) {
-        waddnstr(window, deck.current_phrase().get_translation().c_str(), -1);
-    }
+    waddnstr(window, deck.current_phrase().get_translation().c_str(), -1);
     wnoutrefresh(window);
 }
