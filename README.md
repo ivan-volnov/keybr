@@ -22,6 +22,11 @@ make install
 keybr --import
 ```
 
+### Import cards from Anki with custom query:
+```
+keybr --import --anki_query "\"deck:En::Vocabulary Profile\" is:due -is:new -is:suspended"
+```
+
 ### Run:
 ```
 keybr
