@@ -1,5 +1,4 @@
 #include "deck.h"
-#include <random>
 
 
 
@@ -92,10 +91,9 @@ bool Deck::process_key(int key, bool &repaint_panel, int64_t delay)
 {
     repaint_panel = false;
     int64_t errors = 0;
-    int64_t idx = symbol_idx;
-    if (symbol_idx >= current_phrase().size()) {
+    int64_t idx = symbol_idx >= current_phrase().size() ? -1 : symbol_idx;
+    if (idx < 0) {
         // on the space after the phrase
-        idx = -1;
         if (key == ' ') {
             ++phrase_idx;
             symbol_idx = 0;
@@ -105,7 +103,7 @@ bool Deck::process_key(int key, bool &repaint_panel, int64_t delay)
             errors = 1;
         }
     }
-    else if (current_phrase().get_symbol(symbol_idx) == key) {
+    else if (current_symbol() == key) {
         // into the phrase
         if (++symbol_idx == current_phrase().size()) {
             // on the last symbol of the phrase
@@ -125,11 +123,4 @@ bool Deck::process_key(int key, bool &repaint_panel, int64_t delay)
     }
     phrases.at(phrase_idx).add_stat(idx, errors, delay);
     return true;
-}
-
-void Deck::shuffle()
-{
-    std::random_device rd;
-    std::mt19937 g(rd());
-    std::shuffle(phrases.begin(), phrases.end(), g);
 }

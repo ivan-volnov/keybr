@@ -4,6 +4,7 @@
 #include "deck.h"
 #include "speech_engine.h"
 #include <chrono>
+#include <random>
 
 
 
@@ -34,6 +35,7 @@ private:
     Deck deck;
     std::chrono::steady_clock::time_point key_ts{};
     std::unique_ptr<SpeechEngine> speech;
+    std::mt19937 random_generator;
 };
 
 #endif // TRAINER_H

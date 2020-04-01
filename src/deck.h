@@ -61,9 +61,6 @@ public:
     bool process_key(int key, bool &repaint_panel, int64_t delay);
 
 private:
-    void shuffle();
-
-private:
     std::vector<Phrase> phrases;
     size_t symbol_idx = 0;
     size_t phrase_idx = 0;

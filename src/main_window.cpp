@@ -4,8 +4,8 @@
 #include "deck.h"
 
 
-constexpr uint64_t border_h = 1;
-constexpr uint64_t border_w = 2;
+constexpr uint64_t border_h = 3;
+constexpr uint64_t border_w = 4;
 constexpr uint64_t translation_h = 1;
 
 

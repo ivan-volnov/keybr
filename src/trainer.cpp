@@ -7,9 +7,13 @@
 #include "config.h"
 
 
+constexpr uint64_t revisions = 10;
+constexpr uint64_t total_phrases = 10;
+
 
 Trainer::Trainer() :
-    database(SqliteDatabase::open(Config::instance().get_app_path().append("keybr_db.sqlite")))
+    database(SqliteDatabase::open(Config::instance().get_app_path().append("keybr_db.sqlite"))),
+    random_generator(std::random_device{}())
 {
     const int64_t required_db_version = 1;
     auto sql = database->create_query();
@@ -56,13 +60,11 @@ Trainer::Trainer() :
 
 bool Trainer::load()
 {
-    const uint64_t revisions = 10;
-    const uint64_t total_phrases = 10;
-    fetch(total_phrases - fetch(revisions, true));
+    fetch(total_phrases - std::min(total_phrases, fetch(revisions, true)));
     if (!deck.size()) {
         return false;
     }
-    deck.shuffle();
+    std::shuffle(deck.phrases.begin(), deck.phrases.end(), random_generator);
     if (Config::instance().is_sound_enabled()) {
         speech = std::make_unique<SpeechEngine>();
         say_current_phrase();
@@ -302,7 +304,7 @@ bool Trainer::process_key(int key, bool &repaint_panel)
     }
     deck.phrase_idx = 0;
     deck.symbol_idx = 0;
-    deck.shuffle();
+    std::shuffle(deck.phrases.begin(), deck.phrases.end(), random_generator);
     key_ts = {};
     say_current_phrase();
     return true;
