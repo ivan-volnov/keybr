@@ -57,19 +57,19 @@ void Phrase::add_stat(int64_t pos, int64_t errors, int64_t delay)
     }
 }
 
-size_t Deck::size() const
+size_t Deck::phrase_count() const
 {
     return phrases.size();
-}
-
-const Phrase &Deck::current_phrase() const
-{
-    return phrases.at(phrase_idx);
 }
 
 char Deck::current_symbol() const
 {
     return phrases.at(phrase_idx).get_symbol(symbol_idx);
+}
+
+const Phrase &Deck::current_phrase() const
+{
+    return phrases.at(phrase_idx);
 }
 
 const Phrase &Deck::get_phrase(int64_t idx) const
@@ -85,30 +85,4 @@ int64_t Deck::get_symbol_idx() const
 int64_t Deck::get_phrase_idx() const
 {
     return phrase_idx;
-}
-
-bool Deck::process_key(int key, bool &repaint_panel, int64_t delay)
-{
-    repaint_panel = false;
-    if (current_symbol() == key) {
-        phrases.at(phrase_idx).add_stat(symbol_idx, 0, delay);
-        if (symbol_idx < 0) {                                   // on the space after the phrase
-            ++phrase_idx;
-            ++symbol_idx;
-            repaint_panel = true;
-        }
-        else if (++symbol_idx >= current_phrase().size()) {     // on the last symbol of the phrase
-            if (phrase_idx + 1 >= size()) {                     // on the last phrase
-                repaint_panel = true;
-                return false;
-            }
-            symbol_idx = -1;
-        }
-    }
-    else if (!phrase_idx && !symbol_idx && key == ' ') {        // ignore space error on the first symbol of the first phrase
-    }
-    else {
-        phrases.at(phrase_idx).add_stat(symbol_idx, 1, 0);
-    }
-    return true;
 }

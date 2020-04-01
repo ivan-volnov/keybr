@@ -47,20 +47,15 @@ private:
 
 class Deck
 {
-    friend class Trainer;
-
 public:
-    size_t size() const;
-
-    const Phrase &current_phrase() const;
+    size_t phrase_count() const;
     char current_symbol() const;
+    const Phrase &current_phrase() const;
     const Phrase &get_phrase(int64_t idx) const;
     int64_t get_symbol_idx() const;
     int64_t get_phrase_idx() const;
 
-    bool process_key(int key, bool &repaint_panel, int64_t delay);
-
-private:
+protected:
     std::vector<Phrase> phrases;
     int64_t symbol_idx = 0;
     int64_t phrase_idx = 0;

@@ -33,7 +33,7 @@ void MainWindow::paint(const Deck &deck)
     wclear(window);
     wmove(window, 0, 0);
     int cursor_x = -1, cursor_y = -1;
-    for (int i = 0; i < deck.size(); ++i) {
+    for (int i = 0; i < deck.phrase_count(); ++i) {
         if (i) {
             paint(' ', deck.get_phrase(i - 1).current_errors(-1), false);
         }

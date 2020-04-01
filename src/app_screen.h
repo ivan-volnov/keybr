@@ -6,6 +6,7 @@
 class TranslationWindow;
 class MainWindow;
 class Trainer;
+class Deck;
 struct _win_st;
 using WINDOW = struct _win_st;
 
@@ -19,7 +20,7 @@ public:
     void run();
 
 private:
-    void paint();
+    void paint(const Deck &deck);
 
 private:
     WINDOW *win;

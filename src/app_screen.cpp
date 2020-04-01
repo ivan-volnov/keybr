@@ -33,7 +33,7 @@ AppScreen::~AppScreen()
 
 void AppScreen::run()
 {
-    paint();
+    paint(*trainer);
     int key, height, width;
     bool repaint_panel;
     while (true)
@@ -51,7 +51,7 @@ void AppScreen::run()
                 translation_window->resize(height, width);
                 main_window->resize(height, width);
                 resize_term(height, width);
-                paint();
+                paint(*trainer);
             }
             break;
         default:
@@ -59,23 +59,23 @@ void AppScreen::run()
                 return;
             }
             if (repaint_panel) {
-                translation_window->paint(trainer->get_deck());
+                translation_window->paint(*trainer);
             }
-            main_window->paint(trainer->get_deck());
+            main_window->paint(*trainer);
             doupdate();
             break;
         }
     }
 }
 
-void AppScreen::paint()
+void AppScreen::paint(const Deck &deck)
 {
     clear();
     int height, width;
     getmaxyx(stdscr, height, width);
     mvwhline(stdscr, height - 2, 1, '_', width - 2);
     wnoutrefresh(stdscr);
-    translation_window->paint(trainer->get_deck());
-    main_window->paint(trainer->get_deck());
+    translation_window->paint(deck);
+    main_window->paint(deck);
     doupdate();
 }

@@ -10,7 +10,7 @@
 
 class SqliteDatabase;
 
-class Trainer
+class Trainer : public Deck
 {
 public:
     Trainer();
@@ -20,8 +20,6 @@ public:
     void show_stats() const;
 
     bool process_key(int key, bool &repaint_panel);
-
-    const Deck &get_deck() const;
 
 private:
     uint64_t fetch(uint64_t count, bool revise = false);
@@ -33,7 +31,6 @@ private:
 
 private:
     std::shared_ptr<SqliteDatabase> database;
-    Deck deck;
     std::chrono::steady_clock::time_point key_ts{};
     std::unique_ptr<SpeechEngine> speech;
     std::mt19937 random_generator;

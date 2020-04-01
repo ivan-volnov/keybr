@@ -61,10 +61,10 @@ Trainer::Trainer() :
 bool Trainer::load()
 {
     fetch(total_phrases - std::min(total_phrases, fetch(revisions, true)));
-    if (!deck.size()) {
+    if (!phrase_count()) {
         return false;
     }
-    std::shuffle(deck.phrases.begin(), deck.phrases.end(), random_generator);
+    std::shuffle(phrases.begin(), phrases.end(), random_generator);
     if (Config::instance().is_sound_enabled()) {
         speech = std::make_unique<SpeechEngine>();
         say_current_phrase();
@@ -166,7 +166,7 @@ uint64_t Trainer::fetch(uint64_t count, bool revise)
     while (sql.step()) {
         const auto id = sql.get_uint64();
         ids.push_back(id);
-        deck.phrases.push_back({id, sql.get_string(), sql.get_string(), revise});
+        phrases.push_back({id, sql.get_string(), sql.get_string(), revise});
     }
     if (ids.empty()) {
         return 0;
@@ -193,7 +193,7 @@ void Trainer::load_stats(const std::vector<uint64_t> &ids)
         }
         while (sql.step()) {
             const auto phrase_id = sql.get_uint64();
-            for (auto &phrase : deck.phrases) {
+            for (auto &phrase : phrases) {
                 if (phrase.id != phrase_id) {
                     continue;
                 }
@@ -249,7 +249,7 @@ void Trainer::say_current_phrase() const
     if (!speech) {
         return;
     }
-    auto phrase = deck.current_phrase().phrase;
+    auto phrase = current_phrase().phrase;
     phrase = std::regex_replace(phrase, std::regex("\\bsb\\b"), "somebody");
     phrase = std::regex_replace(phrase, std::regex("\\bsth\\b"), "something");
     phrase = std::regex_replace(phrase, std::regex("\\bswh\\b"), "somewhere");
@@ -273,14 +273,30 @@ bool Trainer::process_key(int key, bool &repaint_panel)
     using namespace std::chrono;
     const auto now = steady_clock::now();
     const auto delay = key_ts.time_since_epoch().count() > 0 ? duration_cast<microseconds>(now - key_ts).count() : 0;
-    if (deck.process_key(key, repaint_panel, delay)) {
-        if (!deck.symbol_idx && repaint_panel) {
+    repaint_panel = false;
+    if (current_symbol() == key) {
+        phrases.at(phrase_idx).add_stat(symbol_idx, 0, delay);
+        if (symbol_idx < 0) {                                   // on the space after the phrase
+            ++phrase_idx;
+            ++symbol_idx;
+            repaint_panel = true;
             say_current_phrase();
         }
-        key_ts = now;
-        return true;
+        else if (++symbol_idx >= current_phrase().size()) {     // on the last symbol of the phrase
+            if (phrase_idx + 1 >= phrase_count()) {             // on the last phrase
+                repaint_panel = true;
+                return load_more_samples();
+            }
+            symbol_idx = -1;
+        }
     }
-    return load_more_samples();
+    else if (!phrase_idx && !symbol_idx && key == ' ') {        // ignore space error on the first symbol of the first phrase
+    }
+    else {
+        phrases.at(phrase_idx).add_stat(symbol_idx, 1, 0);
+    }
+    key_ts = now;
+    return true;
 }
 
 bool Trainer::load_more_samples()
@@ -288,7 +304,7 @@ bool Trainer::load_more_samples()
     auto transaction = database->begin_transaction();
     size_t erased = 0;
     bool has_revision = false;
-    for (auto phrase = deck.phrases.begin(); phrase != deck.phrases.end();) {
+    for (auto phrase = phrases.begin(); phrase != phrases.end();) {
         save(*phrase);
         if (phrase->cumulative_errors() > 0) {
             phrase->is_revision = true;
@@ -296,7 +312,7 @@ bool Trainer::load_more_samples()
             has_revision = true;
         }
         else {
-            phrase = deck.phrases.erase(phrase);
+            phrase = phrases.erase(phrase);
             ++erased;
         }
     }
@@ -304,18 +320,13 @@ bool Trainer::load_more_samples()
         erased -= fetch(1, true);
     }
     fetch(erased);
-    if (deck.phrases.empty()) {
+    if (phrases.empty()) {
         return false;
     }
-    deck.phrase_idx = 0;
-    deck.symbol_idx = 0;
-    std::shuffle(deck.phrases.begin(), deck.phrases.end(), random_generator);
+    phrase_idx = 0;
+    symbol_idx = 0;
+    std::shuffle(phrases.begin(), phrases.end(), random_generator);
     key_ts = {};
     say_current_phrase();
     return true;
-}
-
-const Deck &Trainer::get_deck() const
-{
-    return deck;
 }
