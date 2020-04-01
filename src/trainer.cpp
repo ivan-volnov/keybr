@@ -9,6 +9,7 @@
 
 constexpr uint64_t revisions = 10;
 constexpr uint64_t total_phrases = 10;
+constexpr auto anki_query = "\"deck:En::Vocabulary Profile\" is:due -is:new -is:suspended";
 
 
 Trainer::Trainer() :
@@ -80,10 +81,10 @@ void string_replace(std::string &str, const std::string &from, const std::string
     }
 }
 
-uint64_t Trainer::anki_import()
+uint64_t Trainer::anki_import(const std::string &query)
 {
     AnkiClient anki;
-    auto notes = anki.request("findNotes", {{"query", "\"deck:En::Vocabulary Profile\" is:due -is:new -is:suspended"}});
+    auto notes = anki.request("findNotes", {{"query", query.empty() ? anki_query : query}});
     notes = anki.request("notesInfo", {{"notes", std::move(notes)}});
     auto transaction = database->begin_transaction();
     const auto count = count_db_phrases();

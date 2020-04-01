@@ -24,12 +24,13 @@ void run_app(argparse::ArgumentParser &program)
 {
     Config::instance().read(program);
     auto trainer = std::make_shared<Trainer>();
-    if (program["--stats"] == true) {
+    if (program.get<bool>("--stats")) {
         trainer->show_stats();
         return;
     }
-    if (program["--import"] == true) {
-        std::cout << "Successfully imported " << trainer->anki_import() << " cards" << std::endl;
+    if (program.get<bool>("--import")) {
+        auto query = program.present("--anki_query");
+        std::cout << "Successfully imported " << trainer->anki_import(query ? *query : "") << " cards" << std::endl;
         return;
     }
     if (!trainer->load()) {
@@ -47,16 +48,18 @@ void run_app(argparse::ArgumentParser &program)
 int main(int argc, char *argv[])
 {
     argparse::ArgumentParser program("keybr");
-    program.add_argument("--import")
-           .help("Import cards from anki")
+    program.add_argument("-i", "--import")
+           .help("import cards from anki")
            .default_value(false)
            .implicit_value(true);
-    program.add_argument("--sound")
-           .help("Read aloud the current phrase")
+    program.add_argument("-a", "--anki_query")
+           .help("specify anki query for the import");
+    program.add_argument("-s", "--sound")
+           .help("read aloud the current phrase while typing")
            .default_value(false)
            .implicit_value(true);
-    program.add_argument("--stats")
-           .help("Show stats")
+    program.add_argument("-S", "--stats")
+           .help("show stats and exit")
            .default_value(false)
            .implicit_value(true);
 

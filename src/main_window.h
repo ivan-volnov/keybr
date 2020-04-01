@@ -7,7 +7,6 @@
 struct _win_st;
 using WINDOW = struct _win_st;
 class TrainerDeck;
-struct Symbol;
 typedef unsigned int chtype;
 
 
