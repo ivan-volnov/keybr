@@ -27,6 +27,8 @@ keybr --import
 keybr
 ```
 
+Press escape to exit
+
 ### Run with Speech Engine enabled:
 ```
 keybr --sound
