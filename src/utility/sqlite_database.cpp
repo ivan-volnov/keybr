@@ -20,7 +20,7 @@ Query &Query::operator<<(const char *value)
     if (!value) {
         return *this;
     }
-    if (!ss.str().empty()) {
+    if (!ss.str().empty() && !isspace(ss.str().back())) {
         ss << ' ';
     }
     ss << value;
@@ -32,7 +32,7 @@ Query &Query::operator<<(const std::string &value)
     if (value.empty()) {
         return *this;
     }
-    if (!ss.str().empty()) {
+    if (!ss.str().empty() && !isspace(ss.str().back())) {
         ss << ' ';
     }
     ss << value;
@@ -41,11 +41,16 @@ Query &Query::operator<<(const std::string &value)
 
 Query &Query::add_array(size_t columns) MAYTHROW
 {
-    if (!ss.str().empty()) {
+    if (!ss.str().empty() && !isspace(ss.str().back())) {
         ss << ' ';
     }
-    for (size_t i = 0; i < columns; ++i) {
-        ss << (i ? ",?" : "(?");
+    if (columns > 0) {
+        for (size_t i = 0; i < columns; ++i) {
+            ss << (i ? ",?" : "(?");
+        }
+    }
+    else {
+        ss << '(';
     }
     ss << ')';
     return *this;
@@ -240,6 +245,14 @@ uint64_t Query::get_uint64() MAYTHROW
         throw DatabaseException("uint64 value is out of range");
     }
     return value;
+}
+
+double Query::get_double() MAYTHROW
+{
+    if (col_idx >= col_count) {
+        throw DatabaseException("Column is out of range");
+    }
+    return sqlite3_column_double(stmt, col_idx++);
 }
 
 std::shared_ptr<SqliteDatabase> Query::get_database() const noexcept

@@ -3,9 +3,13 @@
 
 #include <string>
 #include <map>
-#include "utility/average.h"
 
 
+enum class LearnStrategy {
+    Random,
+    ReviseErrors,
+    ReviseSlow
+};
 
 class Trainer;
 
@@ -16,13 +20,12 @@ class Phrase
     struct Stats
     {
         int64_t cumulative_errors = 0;
-        Average<uint64_t> avg_delay;
         int64_t current_errors = 0;
-        Average<uint64_t> current_delay;
+        int64_t current_delay = 0;
     };
 
 public:
-    Phrase(uint64_t id, const std::string &phrase, const std::string &translation, bool is_revision);
+    Phrase(uint64_t id, const std::string &phrase, const std::string &translation, LearnStrategy strategy);
     size_t size() const;
 
     int64_t current_errors(int64_t pos) const;
@@ -38,7 +41,7 @@ private:
     uint64_t id;
     std::string phrase;
     std::string translation;
-    bool is_revision;
+    LearnStrategy strategy;
     std::map<int64_t, Stats> stats;
 };
 

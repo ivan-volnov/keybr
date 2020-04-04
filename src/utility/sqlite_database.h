@@ -62,6 +62,7 @@ public:
     uint32_t get_uint32() MAYTHROW;
     int64_t get_int64() MAYTHROW;
     uint64_t get_uint64() MAYTHROW;
+    double get_double() MAYTHROW;
 
     std::shared_ptr<SqliteDatabase> get_database() const noexcept;
 

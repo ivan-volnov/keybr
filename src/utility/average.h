@@ -7,12 +7,34 @@ template <typename T>
 class Average
 {
 public:
-    void add(T value) {
+    bool operator<(const Average<T> &other) const
+    {
+        return _value < other._value;
+    }
+
+    bool operator>(const Average<T> &other) const
+    {
+        return _value > other._value;
+    }
+
+    bool operator<(const T &value) const
+    {
+        return _value < value;
+    }
+
+    bool operator>(const T &value) const
+    {
+        return _value > value;
+    }
+
+    void add(T value)
+    {
         _value = _value * _count + value;
         _value /= ++_count;
     }
 
-    void add(Average<T> other) {
+    void add(Average<T> other)
+    {
         if (other._count > 0) {
             _value = _value * _count + other._value * other._count;
             _count += other._count;
@@ -20,7 +42,8 @@ public:
         }
     }
 
-    void remove(T value) {
+    void remove(T value)
+    {
         if (_count > 1) {
             _value = _value * _count - value;
             _value /= --_count;
@@ -31,7 +54,8 @@ public:
         }
     }
 
-    void remove(Average<T> other) {
+    void remove(Average<T> other)
+    {
         if (other._count > 0) {
             if (_count > other._count) {
                 _value = _value * _count - other._value * other._count;
@@ -45,7 +69,8 @@ public:
         }
     }
 
-    void replace(T valueFrom, T valueTo) {
+    void replace(T valueFrom, T valueTo)
+    {
         if (_count > 1) {
             _value = _value * _count - valueFrom + valueTo;
             _value /= _count;
@@ -56,16 +81,19 @@ public:
         }
     }
 
-    void reset() {
+    void reset()
+    {
         _value = 0;
         _count = 0;
     }
 
-    T value() const {
+    T value() const
+    {
         return _value;
     }
 
-    uint64_t count() const {
+    uint64_t count() const
+    {
         return _count;
     }
 

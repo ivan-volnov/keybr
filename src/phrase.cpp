@@ -2,8 +2,8 @@
 
 
 
-Phrase::Phrase(uint64_t id, const std::string &phrase, const std::string &translation, bool is_revision) :
-    id(id), phrase(phrase), translation(translation), is_revision(is_revision)
+Phrase::Phrase(uint64_t id, const std::string &phrase, const std::string &translation, LearnStrategy strategy) :
+    id(id), phrase(phrase), translation(translation), strategy(strategy)
 {
 
 }
@@ -53,6 +53,6 @@ void Phrase::add_stat(int64_t pos, int64_t errors, int64_t delay)
     auto &stat = stats[pos];
     stat.current_errors += errors;
     if (errors <= 0 && delay > 80000 && delay < 1500000) {
-        stat.current_delay.add(delay);
+        stat.current_delay = delay;
     }
 }
