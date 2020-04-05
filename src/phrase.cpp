@@ -23,9 +23,7 @@ int64_t Phrase::cumulative_errors() const
 {
     int64_t result = 0;
     for (const auto &stat : stats) {
-        if (stat.first >= 0) {
-            result += stat.second.cumulative_errors + stat.second.current_errors;
-        }
+        result += stat.second.cumulative_errors + stat.second.current_errors;
     }
     return result;
 }

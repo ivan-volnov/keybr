@@ -181,8 +181,7 @@ uint64_t Trainer::fetch(uint64_t count, LearnStrategy strategy)
         sql << "JOIN keybr_stats s ON p.id = s.phrase_id\n"
                "WHERE p.id NOT IN";
         sql.add_array(phrases.size()) << "\n";
-        sql << "AND s.pos >= 0\n"
-               "GROUP BY p.id\n"
+        sql << "GROUP BY p.id\n"
                "HAVING sum(s.errors) > 0\n"
                "ORDER BY sum(s.errors) DESC\n";
         break;
@@ -229,8 +228,7 @@ uint64_t Trainer::fetch(uint64_t count, LearnStrategy strategy)
            "FROM keybr_stats\n"
            "WHERE phrase_id IN";
     sql.add_array(ids.size()) << "\n";
-    sql << "AND pos >= 0\n"
-           "GROUP BY phrase_id, pos";
+    sql << "GROUP BY phrase_id, pos";
     for (auto id : ids) {
         sql.bind(id);
     }
