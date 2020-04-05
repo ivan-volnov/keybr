@@ -19,21 +19,13 @@ int64_t Phrase::current_errors(int64_t pos) const
     return it == stats.end() ? 0 : it->second.current_errors;
 }
 
-bool Phrase::has_current_errors() const
-{
-    for (const auto &stat : stats) {
-        if (stat.second.current_errors > 0) {
-            return true;
-        }
-    }
-    return false;
-}
-
 int64_t Phrase::cumulative_errors() const
 {
     int64_t result = 0;
     for (const auto &stat : stats) {
-        result += stat.second.cumulative_errors + stat.second.current_errors;
+        if (stat.first >= 0) {
+            result += stat.second.cumulative_errors + stat.second.current_errors;
+        }
     }
     return result;
 }

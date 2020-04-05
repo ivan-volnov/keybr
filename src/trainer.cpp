@@ -177,7 +177,8 @@ uint64_t Trainer::fetch(uint64_t count, LearnStrategy strategy)
         sql << "JOIN keybr_stats s ON p.id = s.phrase_id\n"
                "WHERE p.id NOT IN";
         sql.add_array(phrases.size()) << "\n";
-        sql << "GROUP BY p.id\n"
+        sql << "AND s.pos >= 0\n"
+               "GROUP BY p.id\n"
                "HAVING sum(s.errors) > 0\n"
                "ORDER BY sum(s.errors) DESC\n";
         break;
@@ -187,6 +188,7 @@ uint64_t Trainer::fetch(uint64_t count, LearnStrategy strategy)
                "    FROM keybr_stats\n"
                "    WHERE delay > 0\n"
                "    AND errors <= 0\n"
+               "    AND pos >= 0\n"
                "    GROUP BY phrase_id, pos\n"
                ") a ON a.phrase_id = p.id\n"
                "WHERE p.id NOT IN";
@@ -223,7 +225,8 @@ uint64_t Trainer::fetch(uint64_t count, LearnStrategy strategy)
            "FROM keybr_stats\n"
            "WHERE phrase_id IN";
     sql.add_array(ids.size()) << "\n";
-    sql << "GROUP BY phrase_id, pos";
+    sql << "AND pos >= 0\n"
+           "GROUP BY phrase_id, pos";
     for (auto id : ids) {
         sql.bind(id);
     }
@@ -270,16 +273,6 @@ void Trainer::say_current_phrase() const
         phrase = "read, red, red";
     }
     speech->say(phrase);
-}
-
-bool Trainer::has_strategy(LearnStrategy strategy) const
-{
-    for (const auto &phrase : phrases) {
-        if (phrase.strategy == strategy) {
-            return true;
-        }
-    }
-    return false;
 }
 
 uint64_t Trainer::count(LearnStrategy strategy) const

@@ -29,7 +29,6 @@ public:
     size_t size() const;
 
     int64_t current_errors(int64_t pos) const;
-    bool has_current_errors() const;
     int64_t cumulative_errors() const;
 
     char get_symbol(int64_t pos) const;

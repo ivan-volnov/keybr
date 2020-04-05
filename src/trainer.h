@@ -44,7 +44,6 @@ private:
     bool load_next_exercise();
     uint64_t count_db_phrases() const;
     void say_current_phrase() const;
-    bool has_strategy(LearnStrategy strategy) const;
     uint64_t count(LearnStrategy strategy) const;
 
 private:
