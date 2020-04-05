@@ -211,39 +211,33 @@ uint64_t Trainer::fetch(uint64_t count, LearnStrategy strategy)
     if (ids.empty()) {
         return 0;
     }
-    load_stats(ids);
-    return ids.size();
-}
-
-void Trainer::load_stats(const std::vector<uint64_t> &ids)
-{
-    auto sql = database->create_query();
-    auto sql_inserter = database->create_query();
-    for (size_t i = 0; i < ids.size();) {
-        const auto chunk_size = std::min(ids.size() - i, static_cast<size_t>(1000));
-        sql.reset() << "SELECT phrase_id, pos, sum(errors)\n"
-                       "FROM keybr_stats\n"
-                       "WHERE phrase_id IN";
-        sql.add_array(chunk_size) << "\n";
-        sql << "GROUP BY phrase_id, pos";
-        sql_inserter.reset() << "INSERT OR IGNORE INTO keybr_tmp_phrase_ids (phrase_id) VALUES";
-        sql_inserter.add_array(1, chunk_size);
-        for (size_t j = 0; j < chunk_size; ++j) {
-            sql.bind(ids[i]);
-            sql_inserter.bind(ids[i++]);
-        }
-        while (sql.step()) {
-            const auto phrase_id = sql.get_uint64();
-            for (auto &phrase : phrases) {
-                if (phrase.id != phrase_id) {
-                    continue;
-                }
-                auto &stat = phrase.stats[sql.get_int64()];
-                stat.cumulative_errors += sql.get_int64();
-            }
-        }
-        sql_inserter.step();
+    sql.reset();
+    sql << "INSERT OR IGNORE INTO keybr_tmp_phrase_ids (phrase_id) VALUES";
+    sql.add_array(1, ids.size());
+    for (auto id : ids) {
+        sql.bind(id);
     }
+    sql.step();
+    sql.reset();
+    sql << "SELECT phrase_id, pos, sum(errors)\n"
+           "FROM keybr_stats\n"
+           "WHERE phrase_id IN";
+    sql.add_array(ids.size()) << "\n";
+    sql << "GROUP BY phrase_id, pos";
+    for (auto id : ids) {
+        sql.bind(id);
+    }
+    while (sql.step()) {
+        const auto phrase_id = sql.get_uint64();
+        for (auto &phrase : phrases) {
+            if (phrase.id != phrase_id) {
+                continue;
+            }
+            auto &stat = phrase.stats[sql.get_int64()];
+            stat.cumulative_errors += sql.get_int64();
+        }
+    }
+    return ids.size();
 }
 
 uint64_t Trainer::count_db_phrases() const

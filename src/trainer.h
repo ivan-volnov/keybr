@@ -41,7 +41,6 @@ public:
 private:
     bool fetch();
     uint64_t fetch(uint64_t count, LearnStrategy strategy);
-    void load_stats(const std::vector<uint64_t> &ids);
     bool load_next_exercise();
     uint64_t count_db_phrases() const;
     void say_current_phrase() const;
