@@ -8,7 +8,7 @@ Phrase::Phrase(uint64_t id, const std::string &phrase, const std::string &transl
 
 }
 
-size_t Phrase::size() const
+int64_t Phrase::size() const
 {
     return phrase.size();
 }

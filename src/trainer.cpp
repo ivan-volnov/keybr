@@ -16,7 +16,7 @@ Trainer::Trainer() :
     database(SqliteDatabase::open(Config::instance().get_app_path().append("keybr_db.sqlite"))),
     random_generator(std::random_device{}())
 {
-    const int64_t required_db_version = 1;
+    const int64_t required_db_version = 2;
     auto sql = database->create_query();
     sql << "PRAGMA user_version";
     if (!sql.step()) {
@@ -47,6 +47,9 @@ Trainer::Trainer() :
                                "    FOREIGN KEY (phrase_id) REFERENCES keybr_phrases(id)\n"
                                ")");
                 database->exec("CREATE INDEX keybr_stats_phrase_id_idx ON keybr_stats(phrase_id)");
+                break;
+            case 1:
+                database->exec("DELETE FROM keybr_stats WHERE pos < 0");
                 break;
             default:
                 throw std::runtime_error("Can't update database");
@@ -298,12 +301,11 @@ bool Trainer::process_key(int key, bool &repaint_panel)
     if (current_symbol() == key) {
         phrases.at(phrase_idx).add_stat(symbol_idx, 0, delay);
         if (symbol_idx++ < 0) {                                 // on the space after the phrase
-            ++phrase_idx;
             repaint_panel = true;
             say_current_phrase();
         }
         else if (symbol_idx >= current_phrase().size()) {       // on the last symbol of the phrase
-            if (phrase_idx + 1 >= phrase_count()) {             // on the last phrase
+            if (++phrase_idx >= phrases.size()) {               // on the last phrase
                 if (!load_next_exercise()) {
                     return false;
                 }

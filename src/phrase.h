@@ -26,7 +26,7 @@ class Phrase
 
 public:
     Phrase(uint64_t id, const std::string &phrase, const std::string &translation, LearnStrategy strategy);
-    size_t size() const;
+    int64_t size() const;
 
     int64_t current_errors(int64_t pos) const;
     int64_t cumulative_errors() const;

@@ -34,22 +34,19 @@ void MainWindow::paint(const TrainerDeck &deck)
     wmove(window, 0, 0);
     int cursor_x = -1, cursor_y = -1;
     for (int i = 0; i < deck.phrase_count(); ++i) {
-        if (i) {
-            paint(' ', deck.get_phrase(i - 1).current_errors(-1), false);
-        }
         auto &phrase = deck.get_phrase(i);
-        if (i && phrase.size() >= width - getcurx(window)) {
-            waddch(window, '\n');
-        }
-        for (int j = 0; j < phrase.size(); ++j) {
-            if (i == deck.get_phrase_idx() && j == deck.get_symbol_idx()) {
+        for (int j = -1; j < phrase.size(); ++j) {
+            if (j < 0 && !i) {                                              // skip space before the first phrase
+                continue;
+            }
+            if (j == 0 && phrase.size() >= width - getcurx(window)) {       // add newline after the space before current phrase
+                waddch(window, '\n');
+            }
+            if (i == deck.get_phrase_idx() && j == deck.get_symbol_idx()) { // locate the cursor pos while phrase painting
                 getyx(window, cursor_y, cursor_x);
             }
             paint(phrase.get_symbol(j), phrase.current_errors(j), cursor_x < 0);
             // TODO: wrap long phrases by words
-        }
-        if (i == deck.get_phrase_idx() && deck.get_symbol_idx() >= deck.current_phrase().size()) {
-            getyx(window, cursor_y, cursor_x);
         }
     }
     wmove(window, cursor_y, cursor_x);
