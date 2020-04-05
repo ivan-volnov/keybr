@@ -39,13 +39,14 @@ public:
     bool process_key(int key, bool &repaint_panel);
 
 private:
+    bool fetch();
     uint64_t fetch(uint64_t count, LearnStrategy strategy);
     void load_stats(const std::vector<uint64_t> &ids);
     bool load_next_exercise();
-    void save(Phrase &phrase);
     uint64_t count_db_phrases() const;
     void say_current_phrase() const;
     bool has_strategy(LearnStrategy strategy) const;
+    uint64_t count(LearnStrategy strategy) const;
 
 private:
     std::shared_ptr<SqliteDatabase> database;

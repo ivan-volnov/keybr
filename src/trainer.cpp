@@ -7,7 +7,8 @@
 #include "config.h"
 
 
-constexpr uint64_t total_phrases = 10;
+constexpr int64_t total_phrases = 10;
+constexpr int64_t total_revise_slow = 3;
 constexpr auto anki_query = "\"deck:En::Vocabulary Profile\" is:due -is:new -is:suspended";
 
 
@@ -60,17 +61,7 @@ Trainer::Trainer() :
 
 bool Trainer::load()
 {
-    int64_t to_fetch = total_phrases - phrases.size();
-    if (to_fetch > 0) {
-        to_fetch -= fetch(to_fetch, LearnStrategy::ReviseErrors);
-    }
-    if (to_fetch > 0) {
-        to_fetch -= fetch(to_fetch / 2, LearnStrategy::ReviseSlow);
-    }
-    if (to_fetch > 0) {
-        to_fetch -= fetch(to_fetch, LearnStrategy::Random);
-    }
-    if (phrases.empty()) {
+    if (!fetch()) {
         return false;
     }
     std::shuffle(phrases.begin(), phrases.end(), random_generator);
@@ -146,6 +137,24 @@ void Trainer::show_stats() const
     std::cout << "\n- All time:" << std::endl;
     std::cout << "    Average Speed: " << sql.get_string() << " wpm" << std::endl;
     std::cout << "    Total Time: " << sql.get_string() << std::endl;
+}
+
+bool Trainer::fetch()
+{
+    int64_t to_fetch = total_phrases - phrases.size();
+    if (to_fetch > 0) {
+        to_fetch -= fetch(to_fetch, LearnStrategy::ReviseErrors);
+    }
+    if (to_fetch > 0) {
+        const auto s = total_revise_slow - count(LearnStrategy::ReviseSlow);
+        if (s > 0) {
+            to_fetch -= fetch(s, LearnStrategy::ReviseSlow);
+        }
+    }
+    if (to_fetch > 0) {
+        fetch(to_fetch, LearnStrategy::Random);
+    }
+    return !phrases.empty();
 }
 
 uint64_t Trainer::fetch(uint64_t count, LearnStrategy strategy)
@@ -237,30 +246,6 @@ void Trainer::load_stats(const std::vector<uint64_t> &ids)
     }
 }
 
-void Trainer::save(Phrase &phrase)
-{
-    auto sql = database->create_query();
-    sql << "INSERT INTO keybr_stats (phrase_id, pos, errors, delay, ch) VALUES";
-    sql.add_array(5);
-    for (auto &stat : phrase.stats) {
-        const int64_t errors = phrase.strategy == LearnStrategy::ReviseErrors && !stat.second.current_errors && stat.second.cumulative_errors >= 1 ? -1 : stat.second.current_errors;
-        const int64_t delay = stat.second.current_delay;
-        stat.second.current_errors = 0;
-        stat.second.current_delay = 0;
-        if (!errors && !delay) {
-            continue;
-        }
-        sql.clear_bindings();
-        sql.bind(phrase.id);
-        sql.bind(stat.first);
-        sql.bind(errors);
-        sql.bind(delay);
-        sql.bind(std::string(1, phrase.get_symbol(stat.first)));
-        sql.step();
-        stat.second.cumulative_errors += errors;
-    }
-}
-
 uint64_t Trainer::count_db_phrases() const
 {
     auto sql = database->create_query();
@@ -303,6 +288,17 @@ bool Trainer::has_strategy(LearnStrategy strategy) const
     return false;
 }
 
+uint64_t Trainer::count(LearnStrategy strategy) const
+{
+    uint64_t result = 0;
+    for (const auto &phrase : phrases) {
+        if (phrase.strategy == strategy) {
+            ++result;
+        }
+    }
+    return result;
+}
+
 bool Trainer::process_key(int key, bool &repaint_panel)
 {
     using namespace std::chrono;
@@ -336,8 +332,27 @@ bool Trainer::process_key(int key, bool &repaint_panel)
 bool Trainer::load_next_exercise()
 {
     auto transaction = database->begin_transaction();
+    auto sql = database->create_query();
+    sql << "INSERT INTO keybr_stats (phrase_id, pos, errors, delay, ch) VALUES";
+    sql.add_array(5);
     for (auto phrase = phrases.begin(); phrase != phrases.end();) {
-        save(*phrase);
+        for (auto &stat : phrase->stats) {
+            const int64_t errors = phrase->strategy == LearnStrategy::ReviseErrors && !stat.second.current_errors && stat.second.cumulative_errors >= 1 ? -1 : stat.second.current_errors;
+            const int64_t delay = stat.second.current_delay;
+            stat.second.current_errors = 0;
+            stat.second.current_delay = 0;
+            if (!errors && !delay) {
+                continue;
+            }
+            sql.clear_bindings();
+            sql.bind(phrase->id);
+            sql.bind(stat.first);
+            sql.bind(errors);
+            sql.bind(delay);
+            sql.bind(std::string(1, phrase->get_symbol(stat.first)));
+            sql.step();
+            stat.second.cumulative_errors += errors;
+        }
         if (phrase->cumulative_errors() > 0) {
             phrase->strategy = LearnStrategy::ReviseErrors;
             ++phrase;
@@ -346,17 +361,7 @@ bool Trainer::load_next_exercise()
             phrase = phrases.erase(phrase);
         }
     }
-    int64_t to_fetch = total_phrases - phrases.size();
-    if (to_fetch > 0 && !has_strategy(LearnStrategy::ReviseErrors)) {
-        to_fetch -= fetch(1, LearnStrategy::ReviseErrors);
-    }
-    if (to_fetch > 0 && !has_strategy(LearnStrategy::ReviseSlow)) {
-        to_fetch -= fetch(1, LearnStrategy::ReviseSlow);
-    }
-    if (to_fetch > 0) {
-        fetch(to_fetch, LearnStrategy::Random);
-    }
-    if (phrases.empty()) {
+    if (!fetch()) {
         return false;
     }
     phrase_idx = 0;
