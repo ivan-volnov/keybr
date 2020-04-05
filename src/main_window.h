@@ -20,9 +20,6 @@ public:
     void resize(int height, int width);
     void paint(const TrainerDeck &deck);
 
-private:
-    void paint(chtype ch, uint64_t errors, bool is_grey);
-
 public:
     WINDOW *window;
 };

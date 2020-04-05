@@ -45,26 +45,23 @@ void MainWindow::paint(const TrainerDeck &deck)
             if (i == deck.get_phrase_idx() && j == deck.get_symbol_idx()) { // locate the cursor pos while phrase painting
                 getyx(window, cursor_y, cursor_x);
             }
-            paint(phrase.get_symbol(j), phrase.current_errors(j), cursor_x < 0);
+            chtype ch = phrase.get_symbol(j);
+            if (const auto errors = phrase.current_errors(j); errors > 0) {
+                if (ch == ' ') {
+                    // paint unicode symbol ␣ instead
+                    waddch(window, 0xe2);
+                    waddch(window, 0x90);
+                    ch = 0xa3;
+                }
+                ch |= COLOR_PAIR(errors > 1 ? ColorScheme::ColorMultipleErrors : ColorScheme::ColorError);
+            }
+            else if (cursor_x < 0) {
+                ch |= COLOR_PAIR(ColorScheme::ColorGray);
+            }
+            waddch(window, ch);
             // TODO: wrap long phrases by words
         }
     }
     wmove(window, cursor_y, cursor_x);
     wnoutrefresh(window);
-}
-
-void MainWindow::paint(chtype ch, uint64_t errors, bool is_grey)
-{
-    if (errors) {
-        if (ch == ' ') {
-            waddch(window, 0xe2);
-            waddch(window, 0x90);
-            ch = 0xa3;
-        }
-        ch |= COLOR_PAIR(errors > 1 ? ColorScheme::ColorMultipleErrors : ColorScheme::ColorError);
-    }
-    else if (is_grey) {
-        ch |= COLOR_PAIR(ColorScheme::ColorGray);
-    }
-    waddch(window, ch);
 }
