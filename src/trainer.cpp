@@ -64,7 +64,6 @@ bool Trainer::load()
     if (!fetch()) {
         return false;
     }
-    std::shuffle(phrases.begin(), phrases.end(), random_generator);
     if (Config::instance().is_sound_enabled()) {
         speech = std::make_unique<SpeechEngine>();
         say_current_phrase();
@@ -154,6 +153,7 @@ bool Trainer::fetch()
     if (to_fetch > 0) {
         fetch(to_fetch, LearnStrategy::Random);
     }
+    std::shuffle(phrases.begin(), phrases.end(), random_generator);
     return !phrases.empty();
 }
 
@@ -171,7 +171,11 @@ uint64_t Trainer::fetch(uint64_t count, LearnStrategy strategy)
                "    SELECT phrase_id\n"
                "    FROM keybr_tmp_phrase_ids\n"
                ")\n"
-               "ORDER BY RANDOM()\n";
+               "ORDER BY EXISTS (\n"
+               "    SELECT 1\n"
+               "    FROM keybr_stats\n"
+               "    WHERE phrase_id = p.id\n"
+               "), RANDOM()\n";
         break;
     case LearnStrategy::ReviseErrors :
         sql << "JOIN keybr_stats s ON p.id = s.phrase_id\n"
@@ -301,8 +305,15 @@ bool Trainer::process_key(int key, bool &repaint_panel)
         }
         else if (symbol_idx >= current_phrase().size()) {       // on the last symbol of the phrase
             if (phrase_idx + 1 >= phrase_count()) {             // on the last phrase
+                if (!load_next_exercise()) {
+                    return false;
+                }
+                phrase_idx = 0;
+                symbol_idx = 0;
+                key_ts = {};
                 repaint_panel = true;
-                return load_next_exercise();
+                say_current_phrase();
+                return true;
             }
             symbol_idx = -1;
         }
@@ -348,13 +359,5 @@ bool Trainer::load_next_exercise()
             phrase = phrases.erase(phrase);
         }
     }
-    if (!fetch()) {
-        return false;
-    }
-    phrase_idx = 0;
-    symbol_idx = 0;
-    key_ts = {};
-    std::shuffle(phrases.begin(), phrases.end(), random_generator);
-    say_current_phrase();
-    return true;
+    return fetch();
 }
