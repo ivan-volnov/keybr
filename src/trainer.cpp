@@ -73,9 +73,10 @@ bool Trainer::load()
 
 void string_replace(std::string &str, const std::string &from, const std::string &to)
 {
-    if (const auto pos = str.find(from); pos != std::string::npos) {
-        str.erase(pos, from.size());
-        str.insert(pos, to);
+    size_t pos = 0;
+    while ((pos = str.find(from, pos)) != std::string::npos) {
+        str.replace(pos, from.size(), to);
+        pos += to.size();
     }
 }
 
