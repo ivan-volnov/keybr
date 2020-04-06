@@ -25,9 +25,12 @@ AppScreen::AppScreen(const std::shared_ptr<Trainer> &trainer) :
 
 AppScreen::~AppScreen()
 {
+    translation_window.reset();
+    main_window.reset();
     keypad(stdscr, false);
     echo();
     nocbreak();
+    clear();
     endwin();
 }
 
