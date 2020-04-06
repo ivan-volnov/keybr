@@ -8,7 +8,6 @@
 
 
 constexpr int64_t total_phrases = 10;
-constexpr int64_t total_revise_slow = 3;
 constexpr auto anki_query = "\"deck:En::Vocabulary Profile\" is:due -is:new -is:suspended";
 
 
@@ -124,7 +123,7 @@ void Trainer::show_stats() const
            "        60000000.0 / sum(delay) OVER win AS wpm\n"
            "    FROM keybr_stats\n"
            "    WHERE delay > 0\n"
-           "    AND errors <= 0\n"
+           "    AND errors = 0\n"
            "    WINDOW win AS (ORDER BY id ROWS 5 PRECEDING)\n"
            ") a\n"
            "WHERE row_number > 5";
@@ -149,7 +148,7 @@ bool Trainer::fetch()
         to_fetch -= fetch(to_fetch, LearnStrategy::ReviseErrors);
     }
     if (to_fetch > 0) {
-        const auto s = total_revise_slow - count(LearnStrategy::ReviseSlow);
+        const auto s = to_fetch / 2 - count(LearnStrategy::ReviseSlow);
         if (s > 0) {
             to_fetch -= fetch(s, LearnStrategy::ReviseSlow);
         }
@@ -194,7 +193,7 @@ uint64_t Trainer::fetch(uint64_t count, LearnStrategy strategy)
                "    SELECT phrase_id, avg(delay) AS delay\n"
                "    FROM keybr_stats\n"
                "    WHERE delay > 0\n"
-               "    AND errors <= 0\n"
+               "    AND errors = 0\n"
                "    AND pos >= 0\n"
                "    GROUP BY phrase_id, pos\n"
                ") a ON a.phrase_id = p.id\n"
