@@ -19,6 +19,7 @@ class Phrase
 
     struct Stats
     {
+        int64_t phrase_char_id = 0;
         int64_t cumulative_errors = 0;
         int64_t current_errors = 0;
         int64_t current_delay = 0;

@@ -40,7 +40,7 @@ const std::string &Phrase::get_translation() const
 
 void Phrase::add_stat(int64_t pos, int64_t errors, int64_t delay)
 {
-    auto &stat = stats[pos];
+    auto &stat = stats.at(pos);
     stat.current_errors += errors;
     if (errors <= 0 && delay > 80000 && delay < 1500000) {
         stat.current_delay = delay;

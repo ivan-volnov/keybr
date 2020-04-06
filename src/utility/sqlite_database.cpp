@@ -1,6 +1,7 @@
 #include "sqlite_database.h"
 #include "3rdparty/sqlite3/sqlite3.h"
 #include <iostream>
+#include <vector>
 
 
 
@@ -252,6 +253,17 @@ double Query::get_double() MAYTHROW
         throw DatabaseException("Column is out of range");
     }
     return sqlite3_column_double(stmt, col_idx++);
+}
+
+std::vector<int64_t> Query::get_int64_array(char delimiter) MAYTHROW
+{
+    std::vector<int64_t> result;
+    std::stringstream ss(get_string());
+    std::string tmp;
+    while (std::getline(ss, tmp, delimiter)) {
+        result.push_back(std::stoll(tmp));
+    }
+    return result;
 }
 
 std::shared_ptr<SqliteDatabase> Query::get_database() const noexcept

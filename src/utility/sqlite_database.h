@@ -63,6 +63,7 @@ public:
     int64_t get_int64() MAYTHROW;
     uint64_t get_uint64() MAYTHROW;
     double get_double() MAYTHROW;
+    std::vector<int64_t> get_int64_array(char delimiter = ',') MAYTHROW;
 
     std::shared_ptr<SqliteDatabase> get_database() const noexcept;
 

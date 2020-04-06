@@ -15,7 +15,7 @@ Trainer::Trainer() :
     database(SqliteDatabase::open(Config::instance().get_app_path().append("keybr_db.sqlite"))),
     random_generator(std::random_device{}())
 {
-    const int64_t required_db_version = 2;
+    const int64_t required_db_version = 3;
     auto sql = database->create_query();
     sql << "PRAGMA user_version";
     if (!sql.step()) {
@@ -26,35 +26,90 @@ Trainer::Trainer() :
         throw std::runtime_error("App is older than the database. Can't update");
     }
     if (db_version < required_db_version) {
-        auto transaction = database->begin_transaction();
-        for (; db_version < required_db_version; ++db_version) {
-            switch (db_version) {
-            case 0:
-                database->exec("CREATE TABLE keybr_phrases(\n"
-                               "    id INTEGER PRIMARY KEY,\n"
-                               "    phrase TEXT UNIQUE,\n"
-                               "    translation TEXT NOT NULL\n"
-                               ")");
-                database->exec("CREATE TABLE keybr_stats(\n"
-                               "    id INTEGER PRIMARY KEY,\n"
-                               "    create_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,\n"
-                               "    phrase_id INTEGER NOT NULL,\n"
-                               "    pos INTEGER NOT NULL,\n"
-                               "    errors INTEGER NOT NULL DEFAULT 0,\n"
-                               "    delay INTEGER NOT NULL DEFAULT 0,\n"
-                               "    ch TEXT NOT NULL,\n"
-                               "    FOREIGN KEY (phrase_id) REFERENCES keybr_phrases(id)\n"
-                               ")");
-                database->exec("CREATE INDEX keybr_stats_phrase_id_idx ON keybr_stats(phrase_id)");
-                break;
-            case 1:
-                database->exec("DELETE FROM keybr_stats WHERE pos < 0");
-                break;
-            default:
-                throw std::runtime_error("Can't update database");
+        {
+            auto transaction = database->begin_transaction();
+            for (; db_version < required_db_version; ++db_version) {
+                switch (db_version) {
+                case 0:
+                    database->exec("CREATE TABLE keybr_phrases(\n"
+                                   "    id INTEGER PRIMARY KEY,\n"
+                                   "    phrase TEXT UNIQUE,\n"
+                                   "    translation TEXT NOT NULL\n"
+                                   ")");
+                    database->exec("CREATE TABLE keybr_stats(\n"
+                                   "    id INTEGER PRIMARY KEY,\n"
+                                   "    create_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,\n"
+                                   "    phrase_id INTEGER NOT NULL,\n"
+                                   "    pos INTEGER NOT NULL,\n"
+                                   "    errors INTEGER NOT NULL DEFAULT 0,\n"
+                                   "    delay INTEGER NOT NULL DEFAULT 0,\n"
+                                   "    ch TEXT NOT NULL,\n"
+                                   "    FOREIGN KEY (phrase_id) REFERENCES keybr_phrases(id)\n"
+                                   ")");
+                    database->exec("CREATE INDEX keybr_stats_phrase_id_idx ON keybr_stats(phrase_id)");
+                    break;
+                case 1:
+                    database->exec("DELETE FROM keybr_stats WHERE pos < 0");
+                    break;
+                case 2:
+                    database->exec("CREATE TABLE keybr_phrase_chars (\n"
+                                   "    id INTEGER PRIMARY KEY,\n"
+                                   "    phrase_id INTEGER NOT NULL,\n"
+                                   "    pos INTEGER NOT NULL,\n"
+                                   "    ch TEXT NOT NULL,\n"
+                                   "    FOREIGN KEY (phrase_id) REFERENCES keybr_phrases(id)\n"
+                                   ")");
+                    database->exec("CREATE TABLE keybr_stat_errors (\n"
+                                   "    create_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,\n"
+                                   "    phrase_char_id INTEGER NOT NULL,\n"
+                                   "    errors INTEGER NOT NULL,\n"
+                                   "    FOREIGN KEY (phrase_char_id) REFERENCES keybr_phrase_chars(id)\n"
+                                   ")");
+                    database->exec("CREATE TABLE keybr_stat_delays (\n"
+                                   "    create_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,\n"
+                                   "    phrase_char_id INTEGER NOT NULL,\n"
+                                   "    delay INTEGER NOT NULL,\n"
+                                   "    FOREIGN KEY (phrase_char_id) REFERENCES keybr_phrase_chars(id)\n"
+                                   ")");
+                    database->exec("CREATE INDEX keybr_phrase_chars_phrase_id_idx ON keybr_phrase_chars(phrase_id)");
+                    database->exec("CREATE INDEX keybr_stat_errors_char_id_idx ON keybr_stat_errors(phrase_char_id)");
+                    database->exec("CREATE INDEX keybr_stat_delays_char_id_idx ON keybr_stat_delays(phrase_char_id)");
+                    {
+                        auto sql_select = database->create_query();
+                        sql_select << "SELECT id, phrase FROM keybr_phrases";
+                        sql.reset() << "INSERT INTO keybr_phrase_chars (phrase_id, pos, ch) VALUES";
+                        sql.add_array(3);
+                        while (sql_select.step()) {
+                            const auto phrase_id = sql_select.get_uint64();
+                            const auto phrase = sql_select.get_string();
+                            for (int64_t pos = -1; pos < static_cast<int64_t>(phrase.size()); ++pos) {
+                                sql.clear_bindings()
+                                   .bind(phrase_id)
+                                   .bind(pos)
+                                   .bind(std::string(1, pos < 0 ? ' ' : phrase[pos]))
+                                   .step();
+                            }
+                        }
+                    }
+                    database->exec("INSERT INTO keybr_stat_delays\n"
+                                   "SELECT s.create_date, c.id, s.delay\n"
+                                   "FROM keybr_stats s\n"
+                                   "JOIN keybr_phrase_chars c ON s.phrase_id = c.phrase_id AND s.pos = c.pos\n"
+                                   "WHERE s.delay != 0");
+                    database->exec("INSERT INTO keybr_stat_errors\n"
+                                   "SELECT s.create_date, c.id, s.errors\n"
+                                   "FROM keybr_stats s\n"
+                                   "JOIN keybr_phrase_chars c ON s.phrase_id = c.phrase_id AND s.pos = c.pos\n"
+                                   "WHERE s.errors != 0");
+                    database->exec("DROP TABLE keybr_stats");
+                    break;
+                default:
+                    throw std::runtime_error("Can't update database");
+                }
             }
         }
         sql.reset() << "PRAGMA user_version =" << db_version << Query::step;
+        database->exec("VACUUM");
     }
 }
 
@@ -85,23 +140,50 @@ uint64_t Trainer::anki_import(const std::string &query)
     auto notes = anki.request("findNotes", {{"query", query.empty() ? anki_query : query}});
     notes = anki.request("notesInfo", {{"notes", std::move(notes)}});
     auto transaction = database->begin_transaction();
-    const auto count = count_db_phrases();
+
     auto sql = database->create_query();
     sql << "INSERT INTO keybr_phrases (phrase, translation) VALUES";
     sql.add_array(2) << "\n";
     sql << "ON CONFLICT (phrase) DO UPDATE SET translation = excluded.translation";
+
+    auto sql_chars = database->create_query();
+    sql_chars << "INSERT INTO keybr_phrase_chars (phrase_id, pos, ch) VALUES";
+    sql_chars.add_array(3);
+
+    auto sql_select = database->create_query();
+    sql_select << "SELECT p.id\n"
+                  "FROM keybr_phrases p\n"
+                  "WHERE phrase = ?\n"
+                  "AND NOT EXISTS (\n"
+                  "    SELECT 1\n"
+                  "    FROM keybr_phrase_chars\n"
+                  "    WHERE phrase_id = p.id\n"
+                  ")";
+
+    uint64_t result = 0;
     for (const auto &note : notes) {
         const auto &fields = note.at("fields");
         auto phrase = fields.at("Front").at("value").get<std::string>();
         auto translation = fields.at("Back").at("value").get<std::string>();
         string_replace(phrase, ", etc.", "");
         string_replace(phrase, ", etc", "");
-        sql.clear_bindings();
-        sql.bind(phrase);
-        sql.bind(translation);
-        sql.step();
+        sql.clear_bindings()
+           .bind(phrase)
+           .bind(translation)
+           .step();
+        if (sql_select.clear_bindings().bind(phrase).step()) {
+            const auto phrase_id = sql_select.get_int64();
+            for (int64_t pos = -1; pos < static_cast<int64_t>(phrase.size()); ++pos) {
+                sql_chars.clear_bindings()
+                         .bind(phrase_id)
+                         .bind(pos)
+                         .bind(std::string(1, pos < 0 ? ' ' : phrase[pos]))
+                         .step();
+            }
+            ++result;
+        }
     }
-    return count_db_phrases() - count;
+    return result;
 }
 
 void Trainer::show_stats() const
@@ -118,10 +200,8 @@ void Trainer::show_stats() const
            "        date(create_date, 'localtime') = date('now', 'localtime') AS today,\n"
            "        delay,\n"
            "        60000000.0 / sum(delay) OVER win AS wpm\n"
-           "    FROM keybr_stats\n"
-           "    WHERE delay > 0\n"
-           "    AND errors = 0\n"
-           "    WINDOW win AS (ORDER BY id ROWS 5 PRECEDING)\n"
+           "    FROM keybr_stat_delays\n"
+           "    WINDOW win AS (ORDER BY create_date, phrase_char_id ROWS 5 PRECEDING)\n"
            ") a\n"
            "WHERE row_number > 5";
     sql.step();
@@ -163,44 +243,47 @@ uint64_t Trainer::fetch(uint64_t count, LearnStrategy strategy)
         return 0;
     }
     auto sql = database->create_query();
-    sql << "SELECT p.id, p.phrase, p.translation\n"
-           "FROM keybr_phrases p\n";
+    sql << "SELECT p.id, p.phrase, p.translation, group_concat(c.id, ','), group_concat(coalesce(er.errors, 0), ',')\n"
+           "FROM keybr_phrases p\n"
+           "JOIN keybr_phrase_chars c ON c.phrase_id = p.id\n"
+           "LEFT JOIN (\n"
+           "    SELECT phrase_char_id, sum(errors) AS errors\n"
+           "    FROM keybr_stat_errors\n"
+           "    GROUP BY phrase_char_id\n"
+           ") er ON er.phrase_char_id = c.id\n";
     switch (strategy) {
     case LearnStrategy::Random :
         sql << "WHERE p.id NOT IN";
         sql.add_array(phrases.size()) << "\n";
-        sql << "ORDER BY EXISTS (\n"
+        sql << "GROUP BY p.id\n"
+               "ORDER BY EXISTS (\n"
                "    SELECT 1\n"
-               "    FROM keybr_stats\n"
-               "    WHERE phrase_id = p.id\n"
+               "    FROM keybr_stat_delays\n"
+               "    WHERE phrase_char_id = c.id\n"
                "), EXISTS (\n"
                "    SELECT 1\n"
-               "    FROM keybr_stats\n"
-               "    WHERE phrase_id = p.id\n"
+               "    FROM keybr_stat_delays\n"
+               "    WHERE phrase_char_id = c.id\n"
                "    AND date(create_date, 'localtime') = date('now', 'localtime')\n"
                "), RANDOM()\n";
         break;
     case LearnStrategy::ReviseErrors :
-        sql << "JOIN keybr_stats s ON p.id = s.phrase_id\n"
-               "WHERE p.id NOT IN";
+        sql << "WHERE p.id NOT IN";
         sql.add_array(phrases.size()) << "\n";
         sql << "GROUP BY p.id\n"
-               "HAVING sum(s.errors) > 0\n"
-               "ORDER BY sum(s.errors) DESC\n";
+               "HAVING sum(er.errors) > 0\n"
+               "ORDER BY sum(er.errors) DESC\n";
         break;
     case LearnStrategy::ReviseSlow :
-        sql << "JOIN (\n"
-               "    SELECT phrase_id, avg(delay) AS delay\n"
-               "    FROM keybr_stats\n"
-               "    WHERE delay > 0\n"
-               "    AND errors = 0\n"
-               "    AND pos >= 0\n"
-               "    GROUP BY phrase_id, pos\n"
-               ") a ON a.phrase_id = p.id\n"
+        sql << "LEFT JOIN (\n"
+               "    SELECT phrase_char_id, avg(delay) AS delay\n"
+               "    FROM keybr_stat_delays\n"
+               "    GROUP BY phrase_char_id\n"
+               ") a ON a.phrase_char_id = c.id\n"
                "WHERE p.id NOT IN";
         sql.add_array(phrases.size()) << "\n";
         sql << "GROUP BY p.id\n"
-               "ORDER BY avg(delay) DESC\n";
+               "ORDER BY avg(a.delay) DESC\n";
         break;
     }
     sql << "LIMIT ?";
@@ -208,43 +291,20 @@ uint64_t Trainer::fetch(uint64_t count, LearnStrategy strategy)
         sql.bind(phrase.id);
     }
     sql.bind(count);
-    std::vector<uint64_t> ids;
+    uint64_t result = 0;
     while (sql.step()) {
-        const auto id = sql.get_uint64();
-        ids.push_back(id);
-        phrases.push_back({id, sql.get_string(), sql.get_string(), strategy});
-    }
-    if (ids.empty()) {
-        return 0;
-    }
-    sql.reset();
-    sql << "SELECT phrase_id, pos, sum(errors)\n"
-           "FROM keybr_stats\n"
-           "WHERE phrase_id IN";
-    sql.add_array(ids.size()) << "\n";
-    sql << "GROUP BY phrase_id, pos";
-    for (auto id : ids) {
-        sql.bind(id);
-    }
-    while (sql.step()) {
-        const auto phrase_id = sql.get_uint64();
-        for (auto &phrase : phrases) {
-            if (phrase.id != phrase_id) {
-                continue;
-            }
-            auto &stat = phrase.stats[sql.get_int64()];
-            stat.cumulative_errors += sql.get_int64();
+        Phrase phrase{sql.get_uint64(), sql.get_string(), sql.get_string(), strategy};
+        const auto char_ids = sql.get_int64_array();
+        const auto errors = sql.get_int64_array();
+        for (int64_t i = -1; i < phrase.size(); ++i) {
+            auto &stat = phrase.stats[i];
+            stat.phrase_char_id = char_ids.at(i + 1);
+            stat.cumulative_errors = errors.at(i + 1);
         }
+        phrases.push_back(std::move(phrase));
+        ++result;
     }
-    return ids.size();
-}
-
-uint64_t Trainer::count_db_phrases() const
-{
-    auto sql = database->create_query();
-    sql << "SELECT count(*) FROM keybr_phrases";
-    sql.step();
-    return sql.get_uint64();
+    return result;
 }
 
 void Trainer::say_current_phrase() const
@@ -321,26 +381,31 @@ bool Trainer::process_key(int key, bool &repaint_panel)
 bool Trainer::load_next_exercise()
 {
     auto transaction = database->begin_transaction();
-    auto sql = database->create_query();
-    sql << "INSERT INTO keybr_stats (phrase_id, pos, errors, delay, ch) VALUES";
-    sql.add_array(5);
+    auto sql_delays = database->create_query();
+    sql_delays << "INSERT INTO keybr_stat_delays (phrase_char_id, delay) VALUES";
+    sql_delays.add_array(2);
+    auto sql_errors = database->create_query();
+    sql_errors << "INSERT INTO keybr_stat_errors (phrase_char_id, errors) VALUES";
+    sql_errors.add_array(2);
     for (auto phrase = phrases.begin(); phrase != phrases.end();) {
         for (auto &stat : phrase->stats) {
             const int64_t errors = phrase->strategy == LearnStrategy::ReviseErrors && !stat.second.current_errors && stat.second.cumulative_errors >= 1 ? -1 : stat.second.current_errors;
             const int64_t delay = stat.second.current_delay;
             stat.second.current_errors = 0;
             stat.second.current_delay = 0;
-            if (!errors && !delay) {
-                continue;
+            if (errors) {
+                sql_errors.clear_bindings()
+                          .bind(stat.second.phrase_char_id)
+                          .bind(delay)
+                          .step();
+                stat.second.cumulative_errors += errors;
             }
-            sql.clear_bindings();
-            sql.bind(phrase->id);
-            sql.bind(stat.first);
-            sql.bind(errors);
-            sql.bind(delay);
-            sql.bind(std::string(1, phrase->get_symbol(stat.first)));
-            sql.step();
-            stat.second.cumulative_errors += errors;
+            if (delay > 0) {
+                sql_delays.clear_bindings()
+                          .bind(stat.second.phrase_char_id)
+                          .bind(delay)
+                          .step();
+            }
         }
         if (phrase->cumulative_errors() > 0) {
             phrase->strategy = LearnStrategy::ReviseErrors;
