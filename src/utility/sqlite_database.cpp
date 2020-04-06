@@ -186,7 +186,6 @@ Query &Query::clear_bindings() noexcept
     }
     bind_idx = 0;
     col_idx = 0;
-    col_count = 0;
     return *this;
 }
 

@@ -30,7 +30,8 @@ void run_app(argparse::ArgumentParser &program)
     }
     if (program.get<bool>("--import")) {
         auto query = program.present("--anki_query");
-        std::cout << "Successfully imported " << trainer->anki_import(query ? *query : "") << " cards" << std::endl;
+        auto count = trainer->anki_import(query ? *query : "");
+        std::cout << "Successfully imported " << count << " cards" << std::endl;
         return;
     }
     if (!trainer->load()) {
