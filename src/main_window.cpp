@@ -1,6 +1,6 @@
 #include "main_window.h"
 #include <ncurses.h>
-#include "color_scheme.h"
+#include "global.h"
 #include "trainer.h"
 
 
@@ -33,7 +33,7 @@ void MainWindow::paint(const TrainerDeck &deck)
     wclear(window);
     wmove(window, 0, 0);
     int cursor_x = -1, cursor_y = -1;
-    for (int i = 0; i < deck.phrase_count(); ++i) {
+    for (int64_t i = 0; i < deck.phrase_count(); ++i) {
         auto &phrase = deck.get_phrase(i);
         for (int j = -1; j < phrase.size(); ++j) {
             if (j < 0 && !i) {                                              // skip space before the first phrase

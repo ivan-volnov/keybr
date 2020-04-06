@@ -20,6 +20,7 @@ public:
     void run();
 
 private:
+    void init_colors();
     void paint(const TrainerDeck &deck);
 
 private:

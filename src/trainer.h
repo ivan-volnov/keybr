@@ -14,7 +14,7 @@ class SqliteDatabase;
 class TrainerDeck
 {
 public:
-    size_t phrase_count() const { return phrases.size(); }
+    int64_t phrase_count() const { return phrases.size(); }
     char current_symbol() const { return phrases.at(phrase_idx).get_symbol(symbol_idx); }
     const Phrase &current_phrase() const { return phrases.at(phrase_idx); }
     const Phrase &get_phrase(int64_t idx) const { return phrases.at(idx); }

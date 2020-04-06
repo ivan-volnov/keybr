@@ -290,12 +290,12 @@ bool Trainer::process_key(int key, bool &repaint_panel)
     repaint_panel = false;
     if (current_symbol() == key) {
         phrases.at(phrase_idx).add_stat(symbol_idx, 0, delay);
-        if (symbol_idx++ < 0) {                                 // on the space after the phrase
+        if (symbol_idx++ < 0) {                                         // on the space after the phrase
             repaint_panel = true;
             say_current_phrase();
         }
-        else if (symbol_idx >= current_phrase().size()) {       // on the last symbol of the phrase
-            if (++phrase_idx >= phrases.size()) {               // on the last phrase
+        else if (symbol_idx >= current_phrase().size()) {               // on the last symbol of the phrase
+            if (++phrase_idx >= static_cast<int64_t>(phrases.size())) { // on the last phrase
                 if (!load_next_exercise()) {
                     return false;
                 }
@@ -309,7 +309,7 @@ bool Trainer::process_key(int key, bool &repaint_panel)
             symbol_idx = -1;
         }
     }
-    else if (!phrase_idx && !symbol_idx && key == ' ') {        // ignore space error on the first symbol of the first phrase
+    else if (!phrase_idx && !symbol_idx && key == ' ') {                // ignore space error on the first symbol of the first phrase
     }
     else {
         phrases.at(phrase_idx).add_stat(symbol_idx, 1, 0);

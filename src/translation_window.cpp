@@ -1,6 +1,6 @@
 #include "translation_window.h"
 #include <ncurses.h>
-#include "color_scheme.h"
+#include "global.h"
 #include "trainer.h"
 
 constexpr auto translation_h = 1;
