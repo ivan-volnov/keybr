@@ -56,9 +56,6 @@ Trainer::Trainer() :
         }
         sql.reset() << "PRAGMA user_version =" << db_version << Query::step;
     }
-    database->exec("CREATE TEMPORARY TABLE keybr_tmp_phrase_ids(\n"
-                   "    phrase_id INTEGER PRIMARY KEY\n"
-                   ")");
 }
 
 bool Trainer::load()
@@ -170,14 +167,17 @@ uint64_t Trainer::fetch(uint64_t count, LearnStrategy strategy)
            "FROM keybr_phrases p\n";
     switch (strategy) {
     case LearnStrategy::Random :
-        sql << "WHERE p.id NOT IN (\n"
-               "    SELECT phrase_id\n"
-               "    FROM keybr_tmp_phrase_ids\n"
-               ")\n"
-               "ORDER BY EXISTS (\n"
+        sql << "WHERE p.id NOT IN";
+        sql.add_array(phrases.size()) << "\n";
+        sql << "ORDER BY EXISTS (\n"
                "    SELECT 1\n"
                "    FROM keybr_stats\n"
                "    WHERE phrase_id = p.id\n"
+               "), EXISTS (\n"
+               "    SELECT 1\n"
+               "    FROM keybr_stats\n"
+               "    WHERE phrase_id = p.id\n"
+               "    AND date(create_date, 'localtime') = date('now', 'localtime')\n"
                "), RANDOM()\n";
         break;
     case LearnStrategy::ReviseErrors :
@@ -204,10 +204,8 @@ uint64_t Trainer::fetch(uint64_t count, LearnStrategy strategy)
         break;
     }
     sql << "LIMIT ?";
-    if (strategy != LearnStrategy::Random) {
-        for (const auto &phrase : phrases) {
-            sql.bind(phrase.id);
-        }
+    for (const auto &phrase : phrases) {
+        sql.bind(phrase.id);
     }
     sql.bind(count);
     std::vector<uint64_t> ids;
@@ -219,13 +217,6 @@ uint64_t Trainer::fetch(uint64_t count, LearnStrategy strategy)
     if (ids.empty()) {
         return 0;
     }
-    sql.reset();
-    sql << "INSERT OR IGNORE INTO keybr_tmp_phrase_ids (phrase_id) VALUES";
-    sql.add_array(1, ids.size());
-    for (auto id : ids) {
-        sql.bind(id);
-    }
-    sql.step();
     sql.reset();
     sql << "SELECT phrase_id, pos, sum(errors)\n"
            "FROM keybr_stats\n"
