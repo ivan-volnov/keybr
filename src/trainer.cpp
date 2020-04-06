@@ -396,7 +396,7 @@ bool Trainer::load_next_exercise()
             if (errors) {
                 sql_errors.clear_bindings()
                           .bind(stat.second.phrase_char_id)
-                          .bind(delay)
+                          .bind(errors)
                           .step();
                 stat.second.cumulative_errors += errors;
             }
