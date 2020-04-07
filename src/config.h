@@ -4,11 +4,6 @@
 
 #include <filesystem>
 
-namespace argparse
-{
-class ArgumentParser;
-}
-
 class Config
 {
 public:
@@ -19,9 +14,8 @@ public:
 
     std::filesystem::path get_app_path() const;
 
-    void read(argparse::ArgumentParser &program);
-
     bool is_sound_enabled() const;
+    void set_sound_enabled(bool value);
 
 private:
     Config();

@@ -22,7 +22,7 @@ bool AmIBeingDebugged()
 
 void run_app(argparse::ArgumentParser &program)
 {
-    Config::instance().read(program);
+    Config::instance().set_sound_enabled(program.get<bool>("--sound") == true);
     auto trainer = std::make_shared<Trainer>();
     if (program.get<bool>("--stats")) {
         trainer->show_stats();
