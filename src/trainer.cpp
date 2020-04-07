@@ -293,15 +293,12 @@ uint64_t Trainer::fetch(uint64_t count, LearnStrategy strategy)
     sql.bind(count);
     uint64_t result = 0;
     while (sql.step()) {
-        Phrase phrase{sql.get_uint64(), sql.get_string(), sql.get_string(), strategy};
-        const auto char_ids = sql.get_int64_array();
-        const auto errors = sql.get_int64_array();
-        for (int64_t i = -1; i < phrase.size(); ++i) {
-            auto &stat = phrase.stats[i];
-            stat.phrase_char_id = char_ids.at(i + 1);
-            stat.cumulative_errors = errors.at(i + 1);
-        }
-        phrases.push_back(std::move(phrase));
+        phrases.push_back({sql.get_uint64(),
+                           sql.get_string(),
+                           sql.get_string(),
+                           sql.get_int64_array(),
+                           sql.get_int64_array(),
+                           strategy});
         ++result;
     }
     return result;
@@ -389,20 +386,20 @@ bool Trainer::load_next_exercise()
     sql_errors.add_array(2);
     for (auto phrase = phrases.begin(); phrase != phrases.end();) {
         for (auto &stat : phrase->stats) {
-            const int64_t errors = phrase->strategy == LearnStrategy::ReviseErrors && !stat.second.current_errors && stat.second.cumulative_errors >= 1 ? -1 : stat.second.current_errors;
-            const int64_t delay = stat.second.current_delay;
-            stat.second.current_errors = 0;
-            stat.second.current_delay = 0;
+            const int64_t errors = phrase->strategy == LearnStrategy::ReviseErrors && !stat.current_errors && stat.cumulative_errors >= 1 ? -1 : stat.current_errors;
+            const int64_t delay = stat.current_delay;
+            stat.current_errors = 0;
+            stat.current_delay = 0;
             if (errors) {
                 sql_errors.clear_bindings()
-                          .bind(stat.second.phrase_char_id)
+                          .bind(stat.phrase_char_id)
                           .bind(errors)
                           .step();
-                stat.second.cumulative_errors += errors;
+                stat.cumulative_errors += errors;
             }
             if (delay > 0) {
                 sql_delays.clear_bindings()
-                          .bind(stat.second.phrase_char_id)
+                          .bind(stat.phrase_char_id)
                           .bind(delay)
                           .step();
             }

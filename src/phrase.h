@@ -2,7 +2,7 @@
 #define PHRASE_h
 
 #include <string>
-#include <map>
+#include <vector>
 
 
 enum class LearnStrategy {
@@ -26,7 +26,8 @@ class Phrase
     };
 
 public:
-    Phrase(uint64_t id, const std::string &phrase, const std::string &translation, LearnStrategy strategy);
+    Phrase(uint64_t id, const std::string &phrase, const std::string &translation, const std::vector<int64_t> &char_ids, const std::vector<int64_t> &errors, LearnStrategy strategy);
+
     int64_t size() const;
 
     int64_t current_errors(int64_t pos) const;
@@ -42,7 +43,7 @@ private:
     std::string phrase;
     std::string translation;
     LearnStrategy strategy;
-    std::map<int64_t, Stats> stats;
+    std::vector<Stats> stats;
 };
 
 
