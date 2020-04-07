@@ -9,8 +9,12 @@ constexpr int64_t max_current_errors = 5;
 Phrase::Phrase(uint64_t id, const std::string &phrase, const std::string &translation, const std::vector<int64_t> &char_ids, const std::vector<int64_t> &errors, LearnStrategy strategy) :
     id(id), phrase(phrase), translation(translation), strategy(strategy)
 {
-    stats.reserve(phrase.size() + 1);
-    for (size_t i = 0; i < phrase.size() + 1; ++i) {
+    const auto stat_size = phrase.size() + 1;
+    if (char_ids.size() != stat_size || errors.size() != stat_size) {
+        throw std::runtime_error("Got wrong size of char_ids or errors arrays from db");
+    }
+    stats.reserve(stat_size);
+    for (size_t i = 0; i < stat_size; ++i) {
         stats.push_back({char_ids.at(i), errors.at(i)});
     }
 }
