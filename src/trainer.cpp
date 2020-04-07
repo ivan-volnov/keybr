@@ -8,6 +8,7 @@
 
 
 constexpr int64_t total_phrases = 10;
+constexpr int64_t last_n_delay_revisions = 10;
 constexpr auto anki_query = "\"deck:En::Vocabulary Profile\" is:due -is:new -is:suspended";
 
 
@@ -291,8 +292,16 @@ uint64_t Trainer::fetch(uint64_t count, LearnStrategy strategy)
         break;
     case LearnStrategy::ReviseSlow :
         sql << "LEFT JOIN (\n"
-               "    SELECT phrase_char_id, avg(delay) AS delay\n"
-               "    FROM keybr_stat_delays\n"
+               "    SELECT\n"
+               "        phrase_char_id,\n"
+               "        avg(delay) FILTER (WHERE row_number <= " << last_n_delay_revisions << ") AS delay\n"
+               "    FROM (\n"
+               "        SELECT\n"
+               "            phrase_char_id,\n"
+               "            delay,\n"
+               "            row_number() OVER (PARTITION BY phrase_char_id ORDER BY create_date DESC) AS row_number\n"
+               "        FROM keybr_stat_delays\n"
+               "    )\n"
                "    GROUP BY phrase_char_id\n"
                ") a ON a.phrase_char_id = c.id\n"
                "WHERE p.id NOT IN";
