@@ -5,6 +5,12 @@
 
 It supports only **macOS**. Other operating systems weren't tested and aren't planned.
 
+### Used libraries:
+- ncurses *(text-based UI library)*
+- sqlite3 *(relational database management system contained in a C library)*
+- libcurl *(multiprotocol file transfer library)*
+- ApplicationServices framework *(for Apple Speech Synthesis Manager)*
+
 ### Installation:
 ```
 mkdir build
