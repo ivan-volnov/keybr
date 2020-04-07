@@ -11,12 +11,10 @@ enum class LearnStrategy {
     ReviseSlow
 };
 
-class Trainer;
+class Query;
 
 class Phrase
 {
-    friend class Trainer;
-
     struct Stats
     {
         int64_t phrase_char_id = 0;
@@ -30,13 +28,17 @@ public:
 
     int64_t size() const;
 
+    uint64_t get_id() const;
+    char get_symbol(int64_t pos) const;
+    const std::string &get_phrase_text() const;
+    const std::string &get_translation() const;
+    LearnStrategy get_strategy() const;
+
     int64_t current_errors(int64_t pos) const;
     int64_t cumulative_errors() const;
 
-    char get_symbol(int64_t pos) const;
-    const std::string &get_translation() const;
-
     void add_stat(int64_t pos, int64_t errors, int64_t delay);
+    bool save(Query &sql_errors, Query &sql_delay);
 
 private:
     uint64_t id;

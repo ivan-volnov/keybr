@@ -288,7 +288,7 @@ uint64_t Trainer::fetch(uint64_t count, LearnStrategy strategy)
     }
     sql << "LIMIT ?";
     for (const auto &phrase : phrases) {
-        sql.bind(phrase.id);
+        sql.bind(phrase.get_id());
     }
     sql.bind(count);
     uint64_t result = 0;
@@ -309,7 +309,7 @@ void Trainer::say_current_phrase() const
     if (!speech) {
         return;
     }
-    auto phrase = current_phrase().phrase;
+    auto phrase = current_phrase().get_phrase_text();
     phrase = std::regex_replace(phrase, std::regex("\\bsb\\b"), "somebody");
     phrase = std::regex_replace(phrase, std::regex("\\bsth\\b"), "something");
     phrase = std::regex_replace(phrase, std::regex("\\bswh\\b"), "somewhere");
@@ -332,7 +332,7 @@ uint64_t Trainer::count(LearnStrategy strategy) const
 {
     uint64_t result = 0;
     for (const auto &phrase : phrases) {
-        if (phrase.strategy == strategy) {
+        if (phrase.get_strategy() == strategy) {
             ++result;
         }
     }
@@ -385,31 +385,11 @@ bool Trainer::load_next_exercise()
     sql_errors << "INSERT INTO keybr_stat_errors (phrase_char_id, errors) VALUES";
     sql_errors.add_array(2);
     for (auto phrase = phrases.begin(); phrase != phrases.end();) {
-        for (auto &stat : phrase->stats) {
-            const int64_t errors = phrase->strategy == LearnStrategy::ReviseErrors && !stat.current_errors && stat.cumulative_errors >= 1 ? -1 : stat.current_errors;
-            const int64_t delay = stat.current_delay;
-            stat.current_errors = 0;
-            stat.current_delay = 0;
-            if (errors) {
-                sql_errors.clear_bindings()
-                          .bind(stat.phrase_char_id)
-                          .bind(errors)
-                          .step();
-                stat.cumulative_errors += errors;
-            }
-            if (delay > 0) {
-                sql_delays.clear_bindings()
-                          .bind(stat.phrase_char_id)
-                          .bind(delay)
-                          .step();
-            }
-        }
-        if (phrase->cumulative_errors() > 0) {
-            phrase->strategy = LearnStrategy::ReviseErrors;
-            ++phrase;
+        if (phrase->save(sql_errors, sql_delays)) {
+            phrase = phrases.erase(phrase);
         }
         else {
-            phrase = phrases.erase(phrase);
+            ++phrase;
         }
     }
     return fetch();
