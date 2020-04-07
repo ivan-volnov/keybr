@@ -188,6 +188,7 @@ uint64_t Trainer::anki_import(const std::string &query)
 
 void Trainer::show_stats() const
 {
+    constexpr int64_t column_width = 16;
     auto sql = database->create_query();
     sql << "SELECT\n"
            "    round(avg(wpm) FILTER (WHERE today), 2),\n"
@@ -210,12 +211,26 @@ void Trainer::show_stats() const
     }
     else {
         std::cout << "\n- Today:" << std::endl;
-        std::cout << "    Average Speed: " << sql.get_string() << " wpm" << std::endl;
-        std::cout << "    Total Time: " << sql.get_string() << std::endl;
+        std::cout << "    " << std::left << std::setw(column_width) << "Average Speed: " << sql.get_string() << " wpm" << std::endl;
+        std::cout << "    " << std::left << std::setw(column_width) << "Total Time: " << sql.get_string() << std::endl;
     }
     std::cout << "\n- All time:" << std::endl;
-    std::cout << "    Average Speed: " << sql.get_string() << " wpm" << std::endl;
-    std::cout << "    Total Time: " << sql.get_string() << std::endl;
+    std::cout << "    " << std::left << std::setw(column_width) << "Average Speed: " << sql.get_string() << " wpm" << std::endl;
+    std::cout << "    " << std::left << std::setw(column_width) << "Total Time: " << sql.get_string() << std::endl;
+    sql.reset();
+    sql << "SELECT\n"
+           "    count(DISTINCT c.phrase_id) FILTER (WHERE EXISTS (SELECT 1 FROM keybr_stat_delays WHERE phrase_char_id = c.id)),\n"
+           "    count(DISTINCT c.phrase_id)\n"
+           "FROM keybr_phrase_chars c";
+    sql.step();
+    const auto seen = sql.get_int64();
+    const auto total = sql.get_int64();
+    const auto unseen = total - seen;
+    std::cout << "\n- Other stats:" << std::endl;
+    if (unseen > 0) {
+        std::cout << "    " << std::left << std::setw(column_width) << "Unseen phrases: " << unseen << std::endl;
+    }
+    std::cout << "    " << std::left << std::setw(column_width) << "Total phrases: " << total << std::endl;
 }
 
 bool Trainer::fetch()
