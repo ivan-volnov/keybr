@@ -9,6 +9,7 @@
 
 constexpr int64_t total_phrases = 10;
 constexpr int64_t last_n_delay_revisions = 10;
+constexpr double uppercase_delay_multiplier = 0.4;
 constexpr auto anki_query = "\"deck:En::Vocabulary Profile\" is:due -is:new -is:suspended";
 
 
@@ -294,7 +295,10 @@ uint64_t Trainer::fetch(uint64_t count, LearnStrategy strategy)
         sql << "LEFT JOIN (\n"
                "    SELECT\n"
                "        phrase_char_id,\n"
-               "        avg(delay) FILTER (WHERE row_number <= " << last_n_delay_revisions << ") AS delay\n"
+               "        avg(CASE WHEN cc.ch = lower(cc.ch)\n"
+               "            THEN delay\n"
+               "            ELSE delay * " << uppercase_delay_multiplier << "\n"
+               "            END) FILTER (WHERE row_number <= " << last_n_delay_revisions << ") AS delay\n"
                "    FROM (\n"
                "        SELECT\n"
                "            phrase_char_id,\n"
@@ -302,6 +306,7 @@ uint64_t Trainer::fetch(uint64_t count, LearnStrategy strategy)
                "            row_number() OVER (PARTITION BY phrase_char_id ORDER BY create_date DESC) AS row_number\n"
                "        FROM keybr_stat_delays\n"
                "    )\n"
+               "    JOIN keybr_phrase_chars cc ON cc.id = phrase_char_id\n"
                "    GROUP BY phrase_char_id\n"
                ") a ON a.phrase_char_id = c.id\n"
                "WHERE p.id NOT IN";

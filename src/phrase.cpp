@@ -3,6 +3,9 @@
 
 
 
+constexpr int64_t max_current_errors = 5;
+
+
 Phrase::Phrase(uint64_t id, const std::string &phrase, const std::string &translation, const std::vector<int64_t> &char_ids, const std::vector<int64_t> &errors, LearnStrategy strategy) :
     id(id), phrase(phrase), translation(translation), strategy(strategy)
 {
@@ -69,6 +72,9 @@ bool Phrase::save(Query &sql_errors, Query &sql_delay)
 {
     bool has_errors = false;
     for (auto &stat : stats) {
+        if (stat.current_errors > max_current_errors) {
+            stat.current_errors = max_current_errors;
+        }
         if (stat.current_errors <= 0 && stat.cumulative_errors > 0) {
             stat.current_errors = -1;
         }
