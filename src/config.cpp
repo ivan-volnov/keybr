@@ -1,6 +1,7 @@
 #include "config.h"
 #include <unistd.h>
 #include <pwd.h>
+#include "utility/tools.h"
 
 
 Config::Config()
@@ -13,7 +14,7 @@ Config::Config()
     if (!std::filesystem::exists(app_path)) {
         std::filesystem::create_directory(app_path);
     }
-    const auto backup_path = get_app_path().append("backup");
+    const auto backup_path = get_backup_path();
     if (!std::filesystem::exists(backup_path)) {
         std::filesystem::create_directory(backup_path);
     }
@@ -43,4 +44,19 @@ std::filesystem::path Config::get_app_path() const
 std::filesystem::path Config::get_backup_path() const
 {
     return get_app_path().append("backup");
+}
+
+std::string Config::get_db_filepath() const
+{
+    return get_app_path().append("keybr_db.sqlite");
+}
+
+std::string Config::get_backup_db_filepath() const
+{
+    const auto now = std::chrono::system_clock::now();
+    const auto day = std::chrono::floor<std::chrono::days>(now);
+    auto weekday = tools::to_string(std::chrono::weekday(day));
+    weekday.resize(3);
+    weekday[0] = std::tolower(weekday[0]);
+    return get_backup_path().append("keybr_backup_" + weekday + ".sqlite");
 }

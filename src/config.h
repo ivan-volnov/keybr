@@ -15,6 +15,9 @@ public:
     std::filesystem::path get_app_path() const;
     std::filesystem::path get_backup_path() const;
 
+    std::string get_db_filepath() const;
+    std::string get_backup_db_filepath() const;
+
     bool is_sound_enabled() const;
     void set_sound_enabled(bool value);
 

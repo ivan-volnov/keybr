@@ -7,7 +7,6 @@
 class SqliteDatabase;
 
 
-
 class TrainerData
 {
 public:
