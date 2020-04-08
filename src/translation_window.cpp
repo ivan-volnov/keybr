@@ -11,7 +11,6 @@ TranslationWindow::TranslationWindow()
 {
     int height, width;
     getmaxyx(stdscr, height, width);
-
     window = newwin(translation_h, width - translation_border * 2, height - translation_h, translation_border);
     wbkgd(window, COLOR_PAIR(ColorScheme::ColorWindow));
 }

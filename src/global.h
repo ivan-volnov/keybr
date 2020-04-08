@@ -6,7 +6,6 @@
 enum ColorScheme : unsigned int
 {
     ColorWindow,
-    ColorNegative,
     ColorError,
     ColorMultipleErrors,
     ColorGray
