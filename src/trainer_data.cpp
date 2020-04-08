@@ -30,22 +30,36 @@ TrainerData::TrainerData()
             for (; db_version < required_db_version; ++db_version) {
                 switch (db_version) {
                 case 0:
-                    database->exec("CREATE TABLE keybr_phrases(\n"
+                    database->exec("CREATE TABLE keybr_phrases (\n"
                                    "    id INTEGER PRIMARY KEY,\n"
                                    "    phrase TEXT UNIQUE,\n"
                                    "    translation TEXT NOT NULL\n"
                                    ")");
-                    database->exec("CREATE TABLE keybr_stats(\n"
+                    database->exec("CREATE TABLE keybr_phrase_chars (\n"
                                    "    id INTEGER PRIMARY KEY,\n"
-                                   "    create_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,\n"
                                    "    phrase_id INTEGER NOT NULL,\n"
                                    "    pos INTEGER NOT NULL,\n"
-                                   "    errors INTEGER NOT NULL DEFAULT 0,\n"
-                                   "    delay INTEGER NOT NULL DEFAULT 0,\n"
                                    "    ch TEXT NOT NULL,\n"
                                    "    FOREIGN KEY (phrase_id) REFERENCES keybr_phrases(id)\n"
                                    ")");
-                    database->exec("CREATE INDEX keybr_stats_phrase_id_idx ON keybr_stats(phrase_id)");
+                    database->exec("CREATE TABLE keybr_stat_errors (\n"
+                                   "    id INTEGER PRIMARY KEY,\n"
+                                   "    create_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,\n"
+                                   "    phrase_char_id INTEGER NOT NULL,\n"
+                                   "    errors INTEGER NOT NULL,\n"
+                                   "    FOREIGN KEY (phrase_char_id) REFERENCES keybr_phrase_chars(id)\n"
+                                   ")");
+                    database->exec("CREATE TABLE keybr_stat_delays (\n"
+                                   "    id INTEGER PRIMARY KEY,\n"
+                                   "    create_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,\n"
+                                   "    phrase_char_id INTEGER NOT NULL,\n"
+                                   "    delay INTEGER NOT NULL,\n"
+                                   "    FOREIGN KEY (phrase_char_id) REFERENCES keybr_phrase_chars(id)\n"
+                                   ")");
+                    database->exec("CREATE INDEX keybr_phrase_chars_phrase_id_idx ON keybr_phrase_chars(phrase_id)");
+                    database->exec("CREATE INDEX keybr_stat_errors_char_id_idx ON keybr_stat_errors(phrase_char_id)");
+                    database->exec("CREATE INDEX keybr_stat_delays_char_id_idx ON keybr_stat_delays(phrase_char_id)");
+                    db_version = required_db_version - 1; // one step update to actual version
                     break;
                 case 1:
                     database->exec("DELETE FROM keybr_stats WHERE pos < 0");
