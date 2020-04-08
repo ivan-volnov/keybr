@@ -13,6 +13,7 @@ public:
     Config &operator=(const Config &) = delete;
 
     std::filesystem::path get_app_path() const;
+    std::filesystem::path get_backup_path() const;
 
     bool is_sound_enabled() const;
     void set_sound_enabled(bool value);

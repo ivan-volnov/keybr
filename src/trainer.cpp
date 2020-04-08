@@ -1,9 +1,9 @@
 #include "trainer.h"
 #include <iostream>
-#include <fstream>
 #include <regex>
 #include "utility/sqlite_database.h"
 #include "utility/anki_client.h"
+#include "utility/tools.h"
 #include "config.h"
 
 
@@ -29,15 +29,6 @@ bool Trainer::load()
         say_current_phrase();
     }
     return true;
-}
-
-void string_replace(std::string &str, const std::string &from, const std::string &to)
-{
-    size_t pos = 0;
-    while ((pos = str.find(from, pos)) != std::string::npos) {
-        str.replace(pos, from.size(), to);
-        pos += to.size();
-    }
 }
 
 uint64_t Trainer::anki_import(const std::string &query)
@@ -71,8 +62,8 @@ uint64_t Trainer::anki_import(const std::string &query)
         const auto &fields = note.at("fields");
         auto phrase = fields.at("Front").at("value").get<std::string>();
         auto translation = fields.at("Back").at("value").get<std::string>();
-        string_replace(phrase, ", etc.", "");
-        string_replace(phrase, ", etc", "");
+        tools::string_replace(phrase, ", etc.", "");
+        tools::string_replace(phrase, ", etc", "");
         sql.clear_bindings()
            .bind(phrase)
            .bind(translation)
@@ -253,8 +244,8 @@ void Trainer::say_current_phrase() const
     {
         phrase = std::regex_replace(phrase, std::regex("\\bor\\b"), ",");
     }
-    string_replace(phrase, "(", "");
-    string_replace(phrase, ")", "");
+    tools::string_replace(phrase, "(", "");
+    tools::string_replace(phrase, ")", "");
     if (phrase == "read, read, read") {
         phrase = "read, red, red";
     }

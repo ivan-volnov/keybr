@@ -1,11 +1,21 @@
 #include "trainer_data.h"
 #include "utility/sqlite_database.h"
+#include "utility/tools.h"
 #include "config.h"
 
 
 TrainerData::TrainerData()
 {
-    database = SqliteDatabase::open(Config::instance().get_app_path().append("keybr_db.sqlite"));
+    const auto db_filename = Config::instance().get_app_path().append("keybr_db.sqlite");
+    if (std::filesystem::exists(db_filename)) {
+        const auto now = std::chrono::system_clock::now();
+        const auto day = std::chrono::floor<std::chrono::days>(now);
+        auto weekday = tools::to_string(std::chrono::weekday(day));
+        weekday.resize(3);
+        weekday[0] = std::tolower(weekday[0]);
+        tools::clone_file(db_filename, Config::instance().get_backup_path().append("keybr_backup_" + weekday + ".sqlite"));
+    }
+    database = SqliteDatabase::open(db_filename);
     const int64_t required_db_version = 3;
     auto sql = database->create_query();
     sql << "PRAGMA user_version";

@@ -13,6 +13,10 @@ Config::Config()
     if (!std::filesystem::exists(app_path)) {
         std::filesystem::create_directory(app_path);
     }
+    const auto backup_path = get_app_path().append("backup");
+    if (!std::filesystem::exists(backup_path)) {
+        std::filesystem::create_directory(backup_path);
+    }
 }
 
 bool Config::is_sound_enabled() const
@@ -34,4 +38,9 @@ Config &Config::instance()
 std::filesystem::path Config::get_app_path() const
 {
     return app_path;
+}
+
+std::filesystem::path Config::get_backup_path() const
+{
+    return get_app_path().append("backup");
 }
