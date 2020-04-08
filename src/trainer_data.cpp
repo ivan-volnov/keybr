@@ -4,6 +4,9 @@
 #include "config.h"
 
 
+const int64_t required_db_version = 4;
+
+
 TrainerData::TrainerData()
 {
     const auto db_filepath = Config::instance().get_db_filepath();
@@ -11,7 +14,6 @@ TrainerData::TrainerData()
         tools::clone_file(db_filepath, Config::instance().get_backup_db_filepath());
     }
     database = SqliteDatabase::open(db_filepath);
-    const int64_t required_db_version = 3;
     auto sql = database->create_query();
     sql << "PRAGMA user_version";
     if (!sql.step()) {
@@ -22,6 +24,7 @@ TrainerData::TrainerData()
         throw std::runtime_error("App is older than the database. Can't update");
     }
     if (db_version < required_db_version) {
+        sql.reset();
         {
             auto transaction = database->begin_transaction();
             for (; db_version < required_db_version; ++db_version) {
@@ -98,6 +101,36 @@ TrainerData::TrainerData()
                                    "JOIN keybr_phrase_chars c ON s.phrase_id = c.phrase_id AND s.pos = c.pos\n"
                                    "WHERE s.errors != 0");
                     database->exec("DROP TABLE keybr_stats");
+                    break;
+                case 3:
+                    database->exec("ALTER TABLE keybr_stat_errors RENAME TO keybr_stat_errors_old");
+                    database->exec("ALTER TABLE keybr_stat_delays RENAME TO keybr_stat_delays_old");
+                    database->exec("CREATE TABLE keybr_stat_errors (\n"
+                                   "    id INTEGER PRIMARY KEY,\n"
+                                   "    create_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,\n"
+                                   "    phrase_char_id INTEGER NOT NULL,\n"
+                                   "    errors INTEGER NOT NULL,\n"
+                                   "    FOREIGN KEY (phrase_char_id) REFERENCES keybr_phrase_chars(id)\n"
+                                   ")");
+                    database->exec("CREATE TABLE keybr_stat_delays (\n"
+                                   "    id INTEGER PRIMARY KEY,\n"
+                                   "    create_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,\n"
+                                   "    phrase_char_id INTEGER NOT NULL,\n"
+                                   "    delay INTEGER NOT NULL,\n"
+                                   "    FOREIGN KEY (phrase_char_id) REFERENCES keybr_phrase_chars(id)\n"
+                                   ")");
+                    database->exec("INSERT INTO keybr_stat_errors (create_date, phrase_char_id, errors)\n"
+                                   "SELECT create_date, phrase_char_id, errors\n"
+                                   "FROM keybr_stat_errors_old\n"
+                                   "ORDER BY ROWID");
+                    database->exec("INSERT INTO keybr_stat_delays (create_date, phrase_char_id, delay)\n"
+                                   "SELECT create_date, phrase_char_id, delay\n"
+                                   "FROM keybr_stat_delays_old\n"
+                                   "ORDER BY ROWID");
+                    database->exec("DROP TABLE keybr_stat_errors_old");
+                    database->exec("DROP TABLE keybr_stat_delays_old");
+                    database->exec("CREATE INDEX keybr_stat_errors_char_id_idx ON keybr_stat_errors(phrase_char_id)");
+                    database->exec("CREATE INDEX keybr_stat_delays_char_id_idx ON keybr_stat_delays(phrase_char_id)");
                     break;
                 default:
                     throw std::runtime_error("Can't update database");
