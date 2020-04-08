@@ -27,7 +27,7 @@ void MainWindow::resize(int height, int width)
     wresize(window, height - border_h * 2 - translation_h, width - border_w * 2);
 }
 
-void MainWindow::paint(const TrainerDeck &deck)
+void MainWindow::paint(const TrainerData &deck)
 {
     const auto width = getmaxx(window);
     wclear(window);

@@ -26,7 +26,7 @@ void TranslationWindow::resize(int height, int width)
     mvwin(window, height - translation_h, translation_border);
 }
 
-void TranslationWindow::paint(const TrainerDeck &deck)
+void TranslationWindow::paint(const TrainerData &deck)
 {
     wclear(window);
     waddnstr(window, deck.current_phrase().get_translation().c_str(), -1);

@@ -81,7 +81,7 @@ void AppScreen::init_colors()
     init_pair(ColorScheme::ColorGray, 251, -1); // https://jonasjacek.github.io/colors/
 }
 
-void AppScreen::paint(const TrainerDeck &deck)
+void AppScreen::paint(const TrainerData &deck)
 {
     clear();
     int height, width;

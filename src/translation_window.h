@@ -4,7 +4,7 @@
 
 struct _win_st;
 using WINDOW = struct _win_st;
-class TrainerDeck;
+class TrainerData;
 
 
 class TranslationWindow
@@ -15,7 +15,7 @@ public:
 
 public:
     void resize(int height, int width);
-    void paint(const TrainerDeck &deck);
+    void paint(const TrainerData &deck);
 
 public:
     WINDOW *window;
