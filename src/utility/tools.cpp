@@ -2,9 +2,9 @@
 #include <sys/clonefile.h>
 #include <filesystem>
 
-std::string tools::to_string(std::chrono::weekday day)
+std::string tools::weekday_to_string(uint32_t day)
 {
-    switch (static_cast<unsigned int>(day))
+    switch (day)
     {
     case 0:
         return "Sunday";

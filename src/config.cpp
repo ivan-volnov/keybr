@@ -1,6 +1,7 @@
 #include "config.h"
 #include <unistd.h>
 #include <pwd.h>
+#include <ctime>
 #include "utility/tools.h"
 
 
@@ -53,9 +54,8 @@ std::string Config::get_db_filepath() const
 
 std::string Config::get_backup_db_filepath() const
 {
-    const auto now = std::chrono::system_clock::now();
-    const auto day = std::chrono::floor<std::chrono::days>(now);
-    auto weekday = tools::to_string(std::chrono::weekday(day));
+    const auto now = std::time(nullptr);
+    auto weekday = tools::weekday_to_string(std::localtime(&now)->tm_wday);
     weekday.resize(3);
     weekday[0] = std::tolower(weekday[0]);
     return get_backup_path().append("keybr_backup_" + weekday + ".sqlite");
