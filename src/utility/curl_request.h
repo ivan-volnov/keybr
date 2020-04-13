@@ -14,7 +14,7 @@ public:
     void set_json_headers();
     void set_header(const char *value);
     void set_useragent(const char *value);
-    void set_verbose(const char *value);
+    void set_verbose(bool value);
 
     void clear_headers();
 

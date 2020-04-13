@@ -1,10 +1,10 @@
-#ifndef SQLITEDATABASE_H
-#define SQLITEDATABASE_H
+#ifndef SQLITE_DATABASE_H
+#define SQLITE_DATABASE_H
 
 #include <sstream>
-#include "../global.h"
 
 
+#define MAYTHROW noexcept(false)
 
 typedef struct sqlite3 sqlite3;
 typedef struct sqlite3_stmt sqlite3_stmt;
@@ -134,4 +134,4 @@ private:
 };
 
 
-#endif // SQLITEDATABASE_H
+#endif // SQLITE_DATABASE_H

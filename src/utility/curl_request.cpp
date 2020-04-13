@@ -38,9 +38,9 @@ void CurlSession::set_useragent(const char *value)
     curl_easy_setopt(curl, CURLOPT_USERAGENT, value);
 }
 
-void CurlSession::set_verbose(const char *value)
+void CurlSession::set_verbose(bool value)
 {
-    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
+    curl_easy_setopt(curl, CURLOPT_VERBOSE, value);
 }
 
 void CurlSession::clear_headers()
