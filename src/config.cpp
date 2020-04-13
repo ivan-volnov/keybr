@@ -49,7 +49,7 @@ std::filesystem::path Config::get_backup_path() const
 
 std::string Config::get_db_filepath() const
 {
-    return get_app_path().append("keybr_db.sqlite");
+    return get_app_path().append("keybr.db");
 }
 
 std::string Config::get_backup_db_filepath() const
@@ -58,5 +58,5 @@ std::string Config::get_backup_db_filepath() const
     auto weekday = tools::weekday_to_string(std::localtime(&now)->tm_wday);
     weekday.resize(3);
     weekday[0] = std::tolower(weekday[0]);
-    return get_backup_path().append("keybr_backup_" + weekday + ".sqlite");
+    return get_backup_path().append("keybr_backup_" + weekday + ".db");
 }
