@@ -19,6 +19,8 @@ It supports only **macOS**. Other operating systems weren't tested and aren't pl
 - sqlite3 *(relational database management system contained in a C library)*
 - libcurl *(multiprotocol file transfer library)*
 - ApplicationServices framework *(for Apple Speech Synthesis Manager)*
+- nlohmann/json *(header-only JSON parser for Modern C++)*
+- p-ranav/argparse *(header-only argument parser for Modern C++)*
 
 ### Installation
 
