@@ -7,21 +7,42 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
 
-add_subdirectory(3rdparty/sqlite3)
+add_subdirectory(libs/sqlite_database)
+
+include_directories(libs/sqlite_database/include)
 include_directories(./)
 
-file(GLOB_RECURSE USER_SOURCES
-    src/*.cpp
-    src/*.h
-)
-
 add_executable(${PROJECT_NAME}
-    ${USER_SOURCES}
+    src/app_screen.cpp
+    src/app_screen.h
+    src/config.cpp
+    src/config.h
+    src/global.h
+    src/main_window.cpp
+    src/main_window.h
+    src/main.cpp
+    src/phrase.cpp
+    src/phrase.h
+    src/trainer_data.cpp
+    src/trainer_data.h
+    src/trainer.cpp
+    src/trainer.h
+    src/translation_window.cpp
+    src/translation_window.h
+    src/utility/anki_client.cpp
+    src/utility/anki_client.h
+    src/utility/average.h
+    src/utility/curl_request.cpp
+    src/utility/curl_request.h
+    src/utility/speech_engine.cpp
+    src/utility/speech_engine.h
+    src/utility/tools.cpp
+    src/utility/tools.h
 )
 
 target_link_libraries(${PROJECT_NAME}
     ncurses
-    sqlite3_amalgamation
+    sqlite_database
     curl
     "-framework ApplicationServices"
 )

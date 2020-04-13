@@ -2,7 +2,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <sys/sysctl.h>
-#include "3rdparty/argparse.hpp"
+#include <libs/argparse.hpp>
 #include "trainer.h"
 #include "config.h"
 

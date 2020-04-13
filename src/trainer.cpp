@@ -1,7 +1,7 @@
 #include "trainer.h"
 #include <iostream>
 #include <regex>
-#include "utility/sqlite_database.h"
+#include <sqlite_database/sqlite_database.h>
 #include "utility/anki_client.h"
 #include "utility/tools.h"
 #include "config.h"

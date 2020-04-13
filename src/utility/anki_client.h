@@ -2,7 +2,7 @@
 #define ANKICLIENT_H
 
 #include "curl_request.h"
-#include "3rdparty/json.hpp"
+#include <libs/json.hpp>
 
 
 class AnkiClient

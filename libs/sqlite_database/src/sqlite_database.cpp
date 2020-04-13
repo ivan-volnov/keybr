@@ -1,5 +1,5 @@
-#include "sqlite_database.h"
-#include "3rdparty/sqlite3/sqlite3.h"
+#include <sqlite_database/sqlite_database.h>
+#include <libs/sqlite3/sqlite3.h>
 #include <iostream>
 #include <vector>
 
