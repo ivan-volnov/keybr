@@ -1,44 +1,62 @@
 # keybr
-**keybr** is an advanced console keyboard trainer with language learning support. Just import your learning cards from [Anki](https://apps.ankiweb.net) and then use them for touch typing training. The app will track your typing speed and errors and choose phrases for repeating to force learning process. It also can read aloud current phrase.
+
+**keybr** is an advanced console keyboard trainer with language learning support.
+Just import your learning cards from [Anki](https://apps.ankiweb.net) and then use them for touch typing training.
+The app will track your typing speed and errors and choose phrases for repeating to force learning process.
+It also can read aloud current phrase.
+
+I believe it's a good idea to learn how to write the words you are learning.
+This app can help you to learn word spelling along with typing speed of every specific word.
+While you are training your typing speed you are also revising these word meanings.
 
 ![screen](https://raw.githubusercontent.com/ivan-volnov/keybr/master/img/screen.png)
 
 It supports only **macOS**. Other operating systems weren't tested and aren't planned.
 
-### Used libraries:
+### Used libraries
+
 - ncurses *(text-based UI library)*
 - sqlite3 *(relational database management system contained in a C library)*
 - libcurl *(multiprotocol file transfer library)*
 - ApplicationServices framework *(for Apple Speech Synthesis Manager)*
 
-### Installation:
-```
+### Installation
+
+```bash
 mkdir build
 cd build/
 cmake ..
 make install
 ```
+
 It installs into /usr/local/bin directory
 
-### Anki preparation:
+### Anki preparation
+
 - Install [AnkiConnect](https://ankiweb.net/shared/info/2055492159) plugin
 - Check your Note Type Fields. They must be **Front** and **Back**
 
-### Import cards from Anki with custom query:
-```
+### Import cards from Anki with custom query
+
+```bash
 keybr --import --anki_query "\"deck:En::Vocabulary Profile\" is:due -is:new -is:suspended"
 ```
-Use [Anki Searching Query Language](https://docs.ankiweb.net/#/searching). Before importing you can test the query in Anki's Browse screen
 
-### Run:
-```
+Use [Anki Searching Query Language](https://docs.ankiweb.net/#/searching).
+Before importing you can test the query in Anki's Browse screen
+
+### Run
+
+```bash
 keybr
 ```
 
 Press escape to exit
 
-### Run with Speech Engine enabled:
-```
+### Run with Speech Engine enabled
+
+```bash
 keybr --sound
 ```
+
 The app will read aloud the current phrase while typing
