@@ -25,7 +25,7 @@ void run_app(argparse::ArgumentParser &program)
         return;
     }
     {
-        AppScreen app(std::move(trainer));
+        AppScreen app(trainer);
         app.run();
     }
     trainer->show_stats();
