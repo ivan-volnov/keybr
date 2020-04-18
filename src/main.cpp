@@ -1,23 +1,9 @@
 #include "app_screen.h"
-#include <unistd.h>
 #include <iostream>
-#include <sys/sysctl.h>
 #include <libs/argparse.hpp>
 #include "trainer.h"
+#include "utility/tools.h"
 #include "config.h"
-
-
-
-bool AmIBeingDebugged()
-{
-    struct kinfo_proc info;
-    info.kp_proc.p_flag = 0;
-    int mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid() };
-    auto size = sizeof(info);
-    const bool ok = sysctl(mib, sizeof(mib) / sizeof(*mib), &info, &size, nullptr, 0) == 0;
-    assert(ok);
-    return ok && (info.kp_proc.p_flag & P_TRACED) != 0;
-}
 
 
 void run_app(argparse::ArgumentParser &program)
@@ -73,7 +59,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    if (AmIBeingDebugged()) {
+    if (tools::am_I_being_debugged()) {
         run_app(program);
     }
     else {
