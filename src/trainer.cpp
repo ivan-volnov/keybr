@@ -291,6 +291,8 @@ bool Trainer::process_key(int key, bool &repaint_panel)
         }
     }
     else if (!phrase_idx && !symbol_idx && key == ' ') {                // ignore space error on the first symbol of the first phrase
+        assert(key_ts == std::chrono::steady_clock::time_point{});
+        return true;
     }
     else {
         phrases.at(phrase_idx).add_stat(symbol_idx, 1, 0);
