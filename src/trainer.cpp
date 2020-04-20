@@ -168,16 +168,11 @@ uint64_t Trainer::fetch(uint64_t count, LearnStrategy strategy)
         sql << "WHERE p.id NOT IN";
         sql.add_array(phrases.size()) << "\n";
         sql << "GROUP BY p.id\n"
-               "ORDER BY EXISTS (\n"
-               "    SELECT 1\n"
+               "ORDER BY (\n"
+               "    SELECT count(*)\n"
                "    FROM keybr_stat_delays\n"
                "    WHERE phrase_char_id = c.id\n"
-               "), EXISTS (\n"
-               "    SELECT 1\n"
-               "    FROM keybr_stat_delays\n"
-               "    WHERE phrase_char_id = c.id\n"
-               "    AND date(create_date, 'localtime') = date('now', 'localtime')\n"
-               "), RANDOM()\n";
+               "), RANDOM()";
         break;
     case LearnStrategy::ReviseErrors :
         sql << "WHERE p.id NOT IN";
@@ -289,7 +284,6 @@ bool Trainer::process_key(int key, bool &repaint_panel)
         }
     }
     else if (!phrase_idx && !symbol_idx && key == ' ') {                // ignore space error on the first symbol of the first phrase
-        assert(key_ts == std::chrono::steady_clock::time_point{});
         return true;
     }
     else {
