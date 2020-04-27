@@ -39,8 +39,12 @@ void MainWindow::paint(const TrainerData &deck)
             if (j < 0 && !i) {                                              // skip space before the first phrase
                 continue;
             }
-            if (j == 0 && phrase.size() >= width - getcurx(window)) {       // add newline after the space before current phrase
-                waddch(window, '\n');
+            if (j >= 0 && phrase.get_symbol(j - 1) == ' ') {                // add newline after the space before the phrase
+                const auto space_index = phrase.get_phrase_text().find_first_of(' ', j);
+                const auto word_len = space_index == std::string::npos ? phrase.size() : static_cast<int64_t>(space_index);
+                if (word_len - j >= width - getcurx(window)) {              // if there is no space left to render current word
+                    waddch(window, '\n');
+                }
             }
             if (i == deck.get_phrase_idx() && j == deck.get_symbol_idx()) { // locate the cursor pos while phrase painting
                 getyx(window, cursor_y, cursor_x);
@@ -59,7 +63,6 @@ void MainWindow::paint(const TrainerData &deck)
                 ch |= COLOR_PAIR(ColorScheme::ColorGray);
             }
             waddch(window, ch);
-            // TODO: wrap long phrases by words
         }
     }
     wmove(window, cursor_y, cursor_x);
