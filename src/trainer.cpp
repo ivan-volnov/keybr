@@ -137,13 +137,13 @@ bool Trainer::fetch()
         to_fetch -= fetch(to_fetch, LearnStrategy::ReviseErrors);
     }
     if (to_fetch > 0) {
-        const auto s = to_fetch / 2 - count(LearnStrategy::ReviseSlow);
-        if (s > 0) {
-            to_fetch -= fetch(s, LearnStrategy::ReviseSlow);
+        const auto quantity = to_fetch / 2;
+        if (quantity > 0) {
+            to_fetch -= fetch(quantity, LearnStrategy::Unseen);
         }
     }
     if (to_fetch > 0) {
-        fetch(to_fetch, LearnStrategy::Random);
+        fetch(to_fetch, LearnStrategy::ReviseSlow);
     }
     std::shuffle(phrases.begin(), phrases.end(), random_generator);
     return !phrases.empty();
@@ -164,15 +164,16 @@ uint64_t Trainer::fetch(uint64_t count, LearnStrategy strategy)
            "    GROUP BY phrase_char_id\n"
            ") er ON er.phrase_char_id = c.id\n";
     switch (strategy) {
-    case LearnStrategy::Random :
+    case LearnStrategy::Unseen :
         sql << "WHERE p.id NOT IN";
         sql.add_array(phrases.size()) << "\n";
         sql << "GROUP BY p.id\n"
-               "ORDER BY (\n"
-               "    SELECT count(*)\n"
+               "HAVING NOT EXISTS (\n"
+               "    SELECT 1\n"
                "    FROM keybr_stat_delays\n"
                "    WHERE phrase_char_id = c.id\n"
-               "), RANDOM()";
+               ")\n"
+               "ORDER BY RANDOM()";
         break;
     case LearnStrategy::ReviseErrors :
         sql << "WHERE p.id NOT IN";

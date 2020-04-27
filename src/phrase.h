@@ -6,7 +6,7 @@
 
 
 enum class LearnStrategy {
-    Random,
+    Unseen,
     ReviseErrors,
     ReviseSlow
 };
