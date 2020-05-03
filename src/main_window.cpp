@@ -1,5 +1,7 @@
 #include "main_window.h"
 #include <ncurses.h>
+#include <sstream>
+#include <iomanip>
 #include "global.h"
 #include "trainer.h"
 #include "utility/utf8_tools.h"
@@ -112,6 +114,8 @@ void MainWindow::paint_stats(const TrainerData &deck)
 {
     const auto width = getmaxx(window);
     wclear(stats_window);
-    waddnstr(stats_window, "stats:", width - translation_border * 2);
+    std::stringstream ss;
+    ss << "accuracy: " << std::fixed << std::setprecision(2) << deck.accuracy() << '%';
+    waddnstr(stats_window, ss.str().c_str(), width - translation_border * 2);
     wnoutrefresh(stats_window);
 }

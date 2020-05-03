@@ -54,11 +54,11 @@ int64_t Phrase::current_errors(int64_t pos) const
     return stats.at(pos + 1).current_errors;
 }
 
-int64_t Phrase::cumulative_errors() const
+int64_t Phrase::current_errors() const
 {
     int64_t result = 0;
     for (const auto &stat : stats) {
-        result += stat.cumulative_errors + stat.current_errors;
+        result += stat.current_errors;
     }
     return result;
 }

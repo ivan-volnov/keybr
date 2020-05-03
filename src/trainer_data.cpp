@@ -185,3 +185,20 @@ int64_t TrainerData::get_phrase_idx() const
 {
     return phrase_idx;
 }
+
+double TrainerData::accuracy() const
+{
+    auto errors = session_errors;
+    auto correct = session_correct;
+    for (int64_t i = 0; i <= phrase_idx; ++i) {
+        const auto &phrase = phrases.at(i);
+        errors += phrase.current_errors();
+        correct += i == phrase_idx ? std::max(static_cast<int64_t>(0), symbol_idx) : phrase.size();
+    }
+    double percent = 100.0;
+    if (correct + errors > 0) {
+        percent *= correct;
+        percent /= (correct + errors);
+    }
+    return percent;
+}

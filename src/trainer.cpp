@@ -303,6 +303,8 @@ bool Trainer::load_next_exercise()
     sql_errors << "INSERT INTO keybr_stat_errors (phrase_char_id, errors) VALUES";
     sql_errors.add_array(2);
     for (auto phrase = phrases.begin(); phrase != phrases.end();) {
+        session_errors += phrase->current_errors();
+        session_correct += phrase->size();
         if (phrase->save(sql_errors, sql_delays)) {
             phrase = phrases.erase(phrase);
         }

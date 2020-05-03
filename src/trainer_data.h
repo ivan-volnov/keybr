@@ -19,11 +19,15 @@ public:
     int64_t get_symbol_idx() const;
     int64_t get_phrase_idx() const;
 
+    double accuracy() const;
+
 protected:
     std::shared_ptr<SqliteDatabase> database;
     std::vector<Phrase> phrases;
     int64_t symbol_idx = 0;
     int64_t phrase_idx = 0;
+    uint64_t session_errors = 0;
+    uint64_t session_correct = 0;
 };
 
 #endif // TRAINER_DATA_H
