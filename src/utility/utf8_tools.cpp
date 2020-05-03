@@ -111,12 +111,34 @@ std::u32string tools::utf8::decode(const std::string &str)
     return result;
 }
 
+std::u32string tools::utf8::decode(std::string::const_iterator begin, std::string::const_iterator end)
+{
+    std::u32string result;
+    char32_t codepoint;
+    decoder decoder;
+    for (; begin != end; ++begin) {
+        if (decoder.decode_symbol(*begin, codepoint)) {
+            result.append(1, codepoint);
+        }
+    }
+    return result;
+}
+
 std::string tools::utf8::encode(const std::u32string &str)
 {
     std::string result;
     result.reserve(str.size());
     for (auto ch : str) {
         encode_symbol(ch, result);
+    }
+    return result;
+}
+
+std::string tools::utf8::encode(std::u32string::const_iterator begin, std::u32string::const_iterator end)
+{
+    std::string result;
+    for (; begin != end; ++begin) {
+        encode_symbol(*begin, result);
     }
     return result;
 }
@@ -145,6 +167,18 @@ size_t tools::utf8::strlen(const char *str)
     return len;
 }
 
+size_t tools::utf8::strlen(std::string::const_iterator begin, std::string::const_iterator end)
+{
+    size_t len = 0;
+    decoder decoder;
+    for (; begin != end; ++begin) {
+        if (decoder.decode_symbol(*begin)) {
+            ++len;
+        }
+    }
+    return len;
+}
+
 char32_t tools::utf8::at(size_t idx, const std::string &str)
 {
     size_t len = 0;
@@ -166,6 +200,36 @@ char32_t tools::utf8::at(size_t idx, const char *str)
     for (char ch; (ch = *str); ++str) {
         if (decoder.decode_symbol(ch, codepoint) && len++ == idx) {
             return codepoint;
+        }
+    }
+    throw std::out_of_range("utf8: out of range");
+}
+
+std::string::const_iterator tools::utf8::iter_at(size_t idx, const std::string &str)
+{
+    if (idx-- == 0) {
+        return str.begin();
+    }
+    size_t len = 0;
+    decoder decoder;
+    for (auto it = str.begin(); it != str.end(); ++it) {
+        if (decoder.decode_symbol(*it) && len++ == idx) {
+            return ++it;
+        }
+    }
+    throw std::out_of_range("utf8: out of range");
+}
+
+std::string::const_iterator tools::utf8::iter_at(size_t idx, std::string::const_iterator begin, std::string::const_iterator end)
+{
+    if (idx-- == 0) {
+        return begin;
+    }
+    size_t len = 0;
+    decoder decoder;
+    for (; begin != end; ++begin) {
+        if (decoder.decode_symbol(*begin) && len++ == idx) {
+            return ++begin;
         }
     }
     throw std::out_of_range("utf8: out of range");
