@@ -260,16 +260,14 @@ uint64_t Trainer::count(LearnStrategy strategy) const
     return result;
 }
 
-bool Trainer::process_key(char32_t key, bool &repaint_panel)
+bool Trainer::process_key(char32_t key)
 {
     using namespace std::chrono;
     const auto now = steady_clock::now();
     const auto delay = key_ts.time_since_epoch().count() > 0 ? duration_cast<microseconds>(now - key_ts).count() : 0;
-    repaint_panel = false;
     if (current_symbol() == key) {
         phrases.at(phrase_idx).add_stat(symbol_idx, 0, delay);
         if (++symbol_idx >= current_phrase().size()) {                  // on the last symbol of the phrase
-            repaint_panel = true;
             if (++phrase_idx >= static_cast<int64_t>(phrases.size())) { // on the last phrase
                 if (!load_next_exercise()) {
                     return false;

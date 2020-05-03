@@ -7,8 +7,8 @@ enum ColorScheme : unsigned int
 {
     ColorWindow,
     ColorError,
-    ColorMultipleErrors,
-    ColorGray
+    ColorGray,
+    ColorTranslation,
 };
 
 #endif // GLOBAL_H

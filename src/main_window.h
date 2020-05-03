@@ -19,9 +19,11 @@ public:
 public:
     void resize(int height, int width);
     void paint(const TrainerData &deck);
+    void paint_stats(const TrainerData &deck);
 
 public:
     WINDOW *window;
+    WINDOW *stats_window;
 };
 
 #endif // MAINWINDOW_H

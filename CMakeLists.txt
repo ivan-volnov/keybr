@@ -18,17 +18,15 @@ add_executable(${PROJECT_NAME}
     src/config.cpp
     src/config.h
     src/global.h
+    src/main.cpp
     src/main_window.cpp
     src/main_window.h
-    src/main.cpp
     src/phrase.cpp
     src/phrase.h
-    src/trainer_data.cpp
-    src/trainer_data.h
     src/trainer.cpp
     src/trainer.h
-    src/translation_window.cpp
-    src/translation_window.h
+    src/trainer_data.cpp
+    src/trainer_data.h
     src/utility/anki_client.cpp
     src/utility/anki_client.h
     src/utility/average.h

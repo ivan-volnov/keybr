@@ -3,7 +3,6 @@
 
 #include <memory>
 
-class TranslationWindow;
 class MainWindow;
 class Trainer;
 class TrainerData;
@@ -25,7 +24,6 @@ private:
 
 private:
     WINDOW *win;
-    std::unique_ptr<TranslationWindow> translation_window;
     std::unique_ptr<MainWindow> main_window;
 
     std::shared_ptr<Trainer> trainer;
