@@ -4,6 +4,7 @@
 #include <sqlite_database/sqlite_database.h>
 #include "utility/anki_client.h"
 #include "utility/tools.h"
+#include "utility/utf8_tools.h"
 #include "config.h"
 
 
@@ -214,7 +215,7 @@ uint64_t Trainer::fetch(uint64_t count, LearnStrategy strategy)
     uint64_t result = 0;
     while (sql.step()) {
         phrases.push_back({sql.get_uint64(),
-                           sql.get_string(),
+                           tools::utf8::decode(sql.get_string()),
                            sql.get_string(),
                            sql.get_int64_array(),
                            sql.get_int64_array(),
@@ -229,7 +230,7 @@ void Trainer::say_current_phrase() const
     if (!speech) {
         return;
     }
-    auto phrase = current_phrase().get_phrase_text();
+    auto phrase = tools::utf8::encode(current_phrase().get_phrase_text());
     phrase = std::regex_replace(phrase, std::regex("\\bsb\\b"), "somebody");
     phrase = std::regex_replace(phrase, std::regex("\\bsth\\b"), "something");
     phrase = std::regex_replace(phrase, std::regex("\\bswh\\b"), "somewhere");
@@ -259,7 +260,7 @@ uint64_t Trainer::count(LearnStrategy strategy) const
     return result;
 }
 
-bool Trainer::process_key(int key, bool &repaint_panel)
+bool Trainer::process_key(char32_t key, bool &repaint_panel)
 {
     using namespace std::chrono;
     const auto now = steady_clock::now();

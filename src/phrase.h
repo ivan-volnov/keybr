@@ -24,13 +24,13 @@ class Phrase
     };
 
 public:
-    Phrase(uint64_t id, const std::string &phrase, const std::string &translation, const std::vector<int64_t> &char_ids, const std::vector<int64_t> &errors, LearnStrategy strategy);
+    Phrase(uint64_t id, const std::u32string &phrase, const std::string &translation, const std::vector<int64_t> &char_ids, const std::vector<int64_t> &errors, LearnStrategy strategy);
 
     int64_t size() const;
 
     uint64_t get_id() const;
-    char get_symbol(int64_t pos) const;
-    const std::string &get_phrase_text() const;
+    char32_t get_symbol(int64_t pos) const;
+    const std::u32string &get_phrase_text() const;
     const std::string &get_translation() const;
     LearnStrategy get_strategy() const;
 
@@ -42,7 +42,7 @@ public:
 
 private:
     uint64_t id;
-    std::string phrase;
+    std::u32string phrase;
     std::string translation;
     LearnStrategy strategy;
     std::vector<Stats> stats;

@@ -5,6 +5,7 @@
 #include "main_window.h"
 #include "global.h"
 #include "trainer.h"
+#include "utility/utf8_tools.h"
 
 
 
@@ -39,6 +40,8 @@ void AppScreen::run()
     paint(*trainer);
     int key, height, width;
     bool repaint_panel;
+    tools::utf8::decoder decoder;
+    char32_t unicode_key;
     while (true)
     {
         key = wgetch(stdscr);
@@ -58,14 +61,16 @@ void AppScreen::run()
             }
             break;
         default:
-            if (!trainer->process_key(key, repaint_panel)) {
-                return;
+            if (decoder.decode_symbol(key, unicode_key)) {
+                if (!trainer->process_key(unicode_key, repaint_panel)) {
+                    return;
+                }
+                if (repaint_panel) {
+                    translation_window->paint(*trainer);
+                }
+                main_window->paint(*trainer);
+                doupdate();
             }
-            if (repaint_panel) {
-                translation_window->paint(*trainer);
-            }
-            main_window->paint(*trainer);
-            doupdate();
             break;
         }
     }

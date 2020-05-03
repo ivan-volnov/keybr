@@ -17,7 +17,7 @@ public:
     uint64_t anki_import(const std::string &query);
     void show_stats() const;
 
-    bool process_key(int key, bool &repaint_panel);
+    bool process_key(char32_t key, bool &repaint_panel);
 
 private:
     bool fetch();

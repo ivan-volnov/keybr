@@ -13,7 +13,7 @@ public:
     TrainerData();
 
     int64_t phrase_count() const;
-    char current_symbol() const;
+    char32_t current_symbol() const;
     const Phrase &current_phrase() const;
     const Phrase &get_phrase(int64_t idx) const;
     int64_t get_symbol_idx() const;

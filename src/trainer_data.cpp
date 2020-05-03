@@ -161,7 +161,7 @@ int64_t TrainerData::phrase_count() const
     return phrases.size();
 }
 
-char TrainerData::current_symbol() const
+char32_t TrainerData::current_symbol() const
 {
     return phrases.at(phrase_idx).get_symbol(symbol_idx);
 }

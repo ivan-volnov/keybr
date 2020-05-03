@@ -6,7 +6,7 @@
 constexpr int64_t max_current_errors = 5;
 
 
-Phrase::Phrase(uint64_t id, const std::string &phrase, const std::string &translation, const std::vector<int64_t> &char_ids, const std::vector<int64_t> &errors, LearnStrategy strategy) :
+Phrase::Phrase(uint64_t id, const std::u32string &phrase, const std::string &translation, const std::vector<int64_t> &char_ids, const std::vector<int64_t> &errors, LearnStrategy strategy) :
     id(id), phrase(phrase), translation(translation), strategy(strategy)
 {
     const auto stat_size = phrase.size() + 1;
@@ -29,12 +29,12 @@ uint64_t Phrase::get_id() const
     return id;
 }
 
-char Phrase::get_symbol(int64_t pos) const
+char32_t Phrase::get_symbol(int64_t pos) const
 {
     return pos < 0 ? ' ' : phrase.at(pos);
 }
 
-const std::string &Phrase::get_phrase_text() const
+const std::u32string &Phrase::get_phrase_text() const
 {
     return phrase;
 }
