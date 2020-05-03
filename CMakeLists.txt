@@ -38,6 +38,8 @@ add_executable(${PROJECT_NAME}
     src/utility/speech_engine.h
     src/utility/tools.cpp
     src/utility/tools.h
+    src/utility/utf8_tools.cpp
+    src/utility/utf8_tools.h
 )
 
 target_link_libraries(${PROJECT_NAME}
