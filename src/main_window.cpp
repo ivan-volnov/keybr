@@ -18,7 +18,7 @@ MainWindow::MainWindow()
 {
     int height, width;
     getmaxyx(stdscr, height, width);
-    window = subwin(stdscr, height - border_h * 2 - translation_h, width - border_w, border_h, border_w);
+    window = subwin(stdscr, height - border_h * 2 - translation_h, width - border_w * 2, border_h, border_w);
     stats_window = subwin(stdscr, translation_h, width - translation_border * 2, height - translation_h, translation_border);
     wbkgd(window, COLOR_PAIR(ColorScheme::ColorWindow));
     wbkgd(stats_window, COLOR_PAIR(ColorScheme::ColorWindow));
@@ -32,7 +32,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::resize(int height, int width)
 {
-    wresize(window, height - border_h * 2 - translation_h, width - border_w);
+    wresize(window, height - border_h * 2 - translation_h, width - border_w * 2);
     wresize(stats_window, translation_h, width - translation_border * 2);
     mvwin(stats_window, height - translation_h, translation_border);
 }
@@ -54,7 +54,7 @@ void MainWindow::paint(const TrainerData &deck)
             if (j >= 0 && phrase.get_symbol(j - 1) == ' ') {                // add newline after the space before the phrase
                 const auto space_index = phrase.get_phrase_text().find_first_of(' ', j);
                 const auto word_len = space_index == std::string::npos ? phrase.size() : static_cast<int64_t>(space_index);
-                if (word_len - j >= width - border_w - getcurx(window)) {   // if there is no space left to render current word
+                if (word_len - j >= width - getcurx(window)) {              // if there is no space left to render current word
                     waddch(window, '\n');
                 }
             }
@@ -67,7 +67,7 @@ void MainWindow::paint(const TrainerData &deck)
                 if (j == deck.get_symbol_idx()) {                           // locate the cursor pos while phrase painting
                     getyx(window, cursor_y, cursor_x);
                 }
-                if (j == 0) {
+                if (j == phrase.size() / 2) {
                     getyx(window, hint_y, hint_x);
                 }
             }
@@ -90,21 +90,21 @@ void MainWindow::paint(const TrainerData &deck)
             waddch(window, ch);
         }
     }
+    auto translation = '[' + deck.current_phrase().get_translation() + ']';
+    int tr_len = tools::utf8::strlen(translation);
+    if (tr_len > width) {
+        auto begin = tools::utf8::iter_at(width - 1, translation);
+        auto end = std::prev(translation.end());
+        tr_len -= tools::utf8::strlen(begin, end);
+        translation.erase(begin, end);
+    }
+    wmove(window, --hint_y, std::max(0, std::min(hint_x - tr_len / 2, width - tr_len)));
     tools::utf8::decoder decoder;
-    wmove(window, --hint_y, hint_x);
-    int len = 0;
-    for (uint8_t c : deck.current_phrase().get_translation()) {
+    for (uint8_t c : translation) {
         if (decoder.decode_symbol((ch = c))) {
             ch |= COLOR_PAIR(ColorScheme::ColorTranslation);
-            ++len;
         }
         waddch(window, ch);
-        if (len > width - hint_x - 1) {
-            hint_y += 1 + line_spacing;
-            hint_x = 0;
-            len = 0;
-            wmove(window, hint_y, hint_x);
-        }
     }
     wmove(window, cursor_y, cursor_x);
     wnoutrefresh(window);

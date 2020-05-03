@@ -86,7 +86,7 @@ void AppScreen::init_colors()
     init_pair(ColorScheme::ColorWindow, COLOR_BLACK, COLOR_WHITE);
     init_pair(ColorScheme::ColorError, COLOR_RED, COLOR_TRANSPARRENT);
     init_pair(ColorScheme::ColorGray, 251, COLOR_TRANSPARRENT); // https://jonasjacek.github.io/colors/
-    init_pair(ColorScheme::ColorTranslation, COLOR_LIGHT_MAGENTA, COLOR_TRANSPARRENT);
+    init_pair(ColorScheme::ColorTranslation, COLOR_BLUE, COLOR_TRANSPARRENT);
 }
 
 void AppScreen::paint(const TrainerData &deck)
