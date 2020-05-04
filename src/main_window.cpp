@@ -42,8 +42,13 @@ void MainWindow::paint(const TrainerData &deck)
     const auto width = getmaxx(window);
     wclear(window);
     wmove(window, 0, 0);
-    int cursor_x = -1, cursor_y = -1;
-    int hint_x = -1, hint_y = -1;
+    struct {
+        int cursor_x = -1;
+        int cursor_y = -1;
+        int center_x;
+        int center_y;
+        int start_y;
+    } cur_phr;
     chtype ch;
     for (int64_t i = 0; i < deck.phrase_count(); ++i) {
         auto &phrase = deck.get_phrase(i);
@@ -58,17 +63,15 @@ void MainWindow::paint(const TrainerData &deck)
                     waddch(window, '\n');
                 }
             }
-            if (!getcurx(window)) {
-                for (int k = 0; k < line_spacing; ++k) {
-                    waddch(window, '\n');
-                }
-            }
             if (i == deck.get_phrase_idx()) {
                 if (j == deck.get_symbol_idx()) {                           // locate the cursor pos while phrase painting
-                    getyx(window, cursor_y, cursor_x);
+                    getyx(window, cur_phr.cursor_y, cur_phr.cursor_x);
                 }
                 if (j == phrase.size() / 2) {
-                    getyx(window, hint_y, hint_x);
+                    getyx(window, cur_phr.center_y, cur_phr.center_x);
+                }
+                if (!j) {
+                    cur_phr.start_y = getcury(window);
                 }
             }
             ch = phrase.get_symbol(j);
@@ -84,7 +87,7 @@ void MainWindow::paint(const TrainerData &deck)
                     ch |= A_STANDOUT;
                 }
             }
-            else if (cursor_x < 0) {
+            else if (cur_phr.cursor_x < 0) {
                 ch |= COLOR_PAIR(ColorScheme::ColorGray);
             }
             waddch(window, ch);
@@ -98,15 +101,26 @@ void MainWindow::paint(const TrainerData &deck)
         tr_len -= tools::utf8::strlen(begin, end);
         translation.erase(begin, end);
     }
-    wmove(window, --hint_y, std::max(0, std::min(hint_x - tr_len / 2, width - tr_len)));
-    tools::utf8::decoder decoder;
-    for (uint8_t c : translation) {
-        if (decoder.decode_symbol((ch = c))) {
-            ch |= COLOR_PAIR(ColorScheme::ColorTranslation);
-        }
-        waddch(window, ch);
+    if (cur_phr.cursor_y > cur_phr.center_y) {
+        wmove(window, cur_phr.cursor_y, 0);
     }
-    wmove(window, cursor_y, cursor_x);
+    else if (cur_phr.cursor_y < cur_phr.center_y) {
+        wmove(window, cur_phr.cursor_y, width - tr_len);
+    }
+    else {
+        wmove(window, cur_phr.cursor_y, std::max(0, std::min(cur_phr.center_x - tr_len / 2, width - tr_len)));
+    }
+    winsertln(window);
+    if (cur_phr.cursor_y >= cur_phr.start_y) {
+        tools::utf8::decoder decoder;
+        for (uint8_t c : translation) {
+            if (decoder.decode_symbol((ch = c))) {
+                ch |= COLOR_PAIR(ColorScheme::ColorTranslation);
+            }
+            waddch(window, ch);
+        }
+    }
+    wmove(window, cur_phr.cursor_y + 1, cur_phr.cursor_x);
     wnoutrefresh(window);
 }
 
