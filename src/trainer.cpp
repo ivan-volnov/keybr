@@ -26,7 +26,7 @@ bool Trainer::load()
         return false;
     }
     if (Config::instance().is_sound_enabled()) {
-        speech = std::make_unique<SpeechEngine>();
+        speech = std::make_unique<SpeechEngine>("Daniel", "Milena");
         say_current_phrase();
     }
     return true;
@@ -246,7 +246,7 @@ void Trainer::say_current_phrase() const
     if (phrase == "read, read, read") {
         phrase = "read, red, red";
     }
-    speech->say(phrase);
+    speech->say(phrase, current_phrase().get_translation());
 }
 
 uint64_t Trainer::count(LearnStrategy strategy) const
