@@ -45,21 +45,21 @@ private:
 
 void encode_symbol(char32_t codepoint, std::string &str);
 
-std::u32string decode(const std::string &str);
 std::u32string decode(std::string::const_iterator begin, std::string::const_iterator end);
+std::u32string decode(const std::string &str);
 
-std::string encode(const std::u32string &str);
 std::string encode(std::u32string::const_iterator begin, std::u32string::const_iterator end);
+std::string encode(const std::u32string &str);
 
+size_t strlen(std::string::const_iterator begin, std::string::const_iterator end);
 size_t strlen(const std::string &str);
 size_t strlen(const char *str);
-size_t strlen(std::string::const_iterator begin, std::string::const_iterator end);
 
 char32_t at(size_t idx, const std::string &str);
 char32_t at(size_t idx, const char *str);
 
-std::string::const_iterator iter_at(size_t idx, const std::string &str);
-std::string::const_iterator iter_at(size_t idx, std::string::const_iterator begin, std::string::const_iterator end);
+std::string::const_iterator next(std::string::const_iterator begin, std::string::const_iterator end, size_t n = 1);
+std::string::const_iterator next(std::string::const_iterator it, size_t n = 1);
 
 
 } // namespace tools::utf8

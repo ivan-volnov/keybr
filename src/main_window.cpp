@@ -93,8 +93,8 @@ void MainWindow::paint(const TrainerData &deck)
     auto translation = '[' + deck.current_phrase().get_translation() + ']';
     int tr_len = tools::utf8::strlen(translation);
     if (tr_len > width) {
-        auto begin = tools::utf8::iter_at(width - 1, translation);
-        auto end = std::prev(translation.end());
+        const auto begin = tools::utf8::next(translation.begin(), width - 1);
+        const auto end = std::prev(translation.end());
         tr_len -= tools::utf8::strlen(begin, end);
         translation.erase(begin, end);
     }
