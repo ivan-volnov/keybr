@@ -54,6 +54,10 @@ void AppScreen::run()
         switch (key) {
         case 27: // escape
             return;
+        case KEY_UP:
+        case KEY_DOWN:
+        case KEY_LEFT:
+        case KEY_RIGHT:
         case ERR:
             break;
         case KEY_RESIZE:
