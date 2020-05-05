@@ -73,7 +73,6 @@ void AppScreen::run()
                 if (!trainer->process_key(decoder.symbol())) {
                     return;
                 }
-                main_window->paint_stats(*trainer);
                 main_window->paint(*trainer);
                 doupdate();
             }
@@ -95,11 +94,7 @@ void AppScreen::init_colors()
 void AppScreen::paint(const TrainerData &deck)
 {
     clear();
-    int height, width;
-    getmaxyx(stdscr, height, width);
-    mvwhline(stdscr, height - 2, 1, '_', width - 2);
     wnoutrefresh(stdscr);
-    main_window->paint_stats(deck);
     main_window->paint(deck);
     doupdate();
 }

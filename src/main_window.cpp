@@ -9,31 +9,24 @@
 
 constexpr int64_t border_h = 3;
 constexpr int64_t border_w = 4;
-constexpr int64_t translation_h = 1;
-constexpr int64_t translation_border = 1;
 
 
 MainWindow::MainWindow()
 {
     int height, width;
     getmaxyx(stdscr, height, width);
-    window = subwin(stdscr, height - border_h * 2 - translation_h, width - border_w * 2, border_h, border_w);
-    stats_window = subwin(stdscr, translation_h, width - translation_border * 2, height - translation_h, translation_border);
+    window = subwin(stdscr, height - border_h * 2, width - border_w * 2, border_h, border_w);
     wbkgd(window, COLOR_PAIR(ColorScheme::ColorWindow));
-    wbkgd(stats_window, COLOR_PAIR(ColorScheme::ColorWindow));
 }
 
 MainWindow::~MainWindow()
 {
-    delwin(stats_window);
     delwin(window);
 }
 
 void MainWindow::resize(int height, int width)
 {
-    wresize(window, height - border_h * 2 - translation_h, width - border_w * 2);
-    wresize(stats_window, translation_h, width - translation_border * 2);
-    mvwin(stats_window, height - translation_h, translation_border);
+    wresize(window, height - border_h * 2, width - border_w * 2);
 }
 
 void MainWindow::paint(const TrainerData &deck)
@@ -121,14 +114,4 @@ void MainWindow::paint(const TrainerData &deck)
     }
     wmove(window, cur_phr.cursor_y + 1, cur_phr.cursor_x);
     wnoutrefresh(window);
-}
-
-void MainWindow::paint_stats(const TrainerData &deck)
-{
-    const auto width = getmaxx(window);
-    wclear(stats_window);
-    std::stringstream ss;
-    ss << "accuracy: " << std::fixed << std::setprecision(2) << deck.accuracy() << '%';
-    waddnstr(stats_window, ss.str().c_str(), width - translation_border * 2);
-    wnoutrefresh(stats_window);
 }

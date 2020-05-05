@@ -23,7 +23,6 @@ public:
 
 public:
     WINDOW *window;
-    WINDOW *stats_window;
 };
 
 #endif // MAINWINDOW_H
