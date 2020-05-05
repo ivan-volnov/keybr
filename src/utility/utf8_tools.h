@@ -29,7 +29,7 @@ SOFTWARE.
 #include <string>
 
 
-namespace tools::utf8 {
+namespace utf8 {
 
 
 class decoder
@@ -104,6 +104,6 @@ size_t strlen(Iterator begin, Iterator end)
 }
 
 
-} // namespace tools::utf8
+} // namespace utf8
 
 #endif // UTF8_TOOLS_H

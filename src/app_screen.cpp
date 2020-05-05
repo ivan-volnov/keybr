@@ -46,7 +46,7 @@ void AppScreen::run()
 {
     paint(*trainer);
     int key, height, width;
-    tools::utf8::decoder decoder;
+    utf8::decoder decoder;
     while (true)
     {
         key = wgetch(stdscr);
