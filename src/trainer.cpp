@@ -71,11 +71,13 @@ uint64_t Trainer::anki_import(const std::string &query)
            .step();
         if (sql_select.clear_bindings().bind(phrase).step()) {
             const auto phrase_id = sql_select.get_int64();
-            for (int64_t pos = -1; pos < static_cast<int64_t>(phrase.size()); ++pos) {
+            tools::utf8::decoder decoder;
+            auto it = phrase.cbegin();
+            for (int64_t pos = -1; pos < 0 || decoder.iterate(it, phrase.cend()); ++pos) {
                 sql_chars.clear_bindings()
                          .bind(phrase_id)
                          .bind(pos)
-                         .bind(std::string(1, pos < 0 ? ' ' : phrase[pos]))
+                         .bind(tools::utf8::encode(pos < 0 ? ' ' : decoder.symbol()))
                          .step();
             }
             ++result;
