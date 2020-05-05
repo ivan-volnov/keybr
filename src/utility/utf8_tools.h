@@ -35,11 +35,39 @@ namespace tools::utf8 {
 class decoder
 {
 public:
-    bool decode_symbol(uint8_t ch, char32_t &codepoint);
     bool decode_symbol(uint8_t ch);
+    bool skip_symbol(uint8_t ch);
+
+    char32_t symbol() const;
+
+    template<typename Iterator>
+    bool iterate(Iterator &it, Iterator end)
+    {
+        while (it != end) {
+            if (decode_symbol(*it++)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    template<typename Iterator>
+    bool anvance(Iterator &it, Iterator end, size_t n = 1)
+    {
+        if (!n) {
+            return true;
+        }
+        while (it != end) {
+            if (skip_symbol(*it++) && !--n) {
+                return true;
+            }
+        }
+        return false;
+    }
 
 private:
     uint32_t state = 0;
+    char32_t codepoint;
 };
 
 
@@ -50,16 +78,30 @@ std::u32string decode(const std::string &str);
 
 std::string encode(std::u32string::const_iterator begin, std::u32string::const_iterator end);
 std::string encode(const std::u32string &str);
+std::string encode(char32_t codepoint);
 
-size_t strlen(std::string::const_iterator begin, std::string::const_iterator end);
 size_t strlen(const std::string &str);
 size_t strlen(const char *str);
 
 char32_t at(size_t idx, const std::string &str);
 char32_t at(size_t idx, const char *str);
 
-std::string::const_iterator next(std::string::const_iterator begin, std::string::const_iterator end, size_t n = 1);
-std::string::const_iterator next(std::string::const_iterator it, size_t n = 1);
+
+template<typename Iterator>
+Iterator next(Iterator it, Iterator end, size_t n = 1)
+{
+    decoder().anvance(it, end, n);
+    return it;
+}
+
+template<typename Iterator>
+size_t strlen(Iterator begin, Iterator end)
+{
+    size_t len = 0;
+    decoder decoder;
+    while (decoder.anvance(begin, end)) { ++len; }
+    return len;
+}
 
 
 } // namespace tools::utf8

@@ -11,7 +11,6 @@ constexpr int64_t border_h = 3;
 constexpr int64_t border_w = 4;
 constexpr int64_t translation_h = 1;
 constexpr int64_t translation_border = 1;
-constexpr int64_t line_spacing = 1;
 
 
 MainWindow::MainWindow()
@@ -96,7 +95,7 @@ void MainWindow::paint(const TrainerData &deck)
     auto translation = '[' + deck.current_phrase().get_translation() + ']';
     int tr_len = tools::utf8::strlen(translation);
     if (tr_len > width) {
-        const auto begin = tools::utf8::next(translation.begin(), width - 1);
+        const auto begin = tools::utf8::next(translation.begin(), translation.end(), width - 1);
         const auto end = std::prev(translation.end());
         tr_len -= tools::utf8::strlen(begin, end);
         translation.erase(begin, end);
@@ -114,7 +113,7 @@ void MainWindow::paint(const TrainerData &deck)
     if (cur_phr.cursor_y >= cur_phr.start_y) {
         tools::utf8::decoder decoder;
         for (uint8_t c : translation) {
-            if (decoder.decode_symbol((ch = c))) {
+            if (decoder.skip_symbol((ch = c))) {
                 ch |= COLOR_PAIR(ColorScheme::ColorTranslation);
             }
             waddch(window, ch);

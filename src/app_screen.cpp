@@ -47,7 +47,6 @@ void AppScreen::run()
     paint(*trainer);
     int key, height, width;
     tools::utf8::decoder decoder;
-    char32_t unicode_key;
     while (true)
     {
         key = wgetch(stdscr);
@@ -70,8 +69,8 @@ void AppScreen::run()
             }
             break;
         default:
-            if (decoder.decode_symbol(key, unicode_key)) {
-                if (!trainer->process_key(unicode_key)) {
+            if (decoder.decode_symbol(key)) {
+                if (!trainer->process_key(decoder.symbol())) {
                     return;
                 }
                 main_window->paint_stats(*trainer);
