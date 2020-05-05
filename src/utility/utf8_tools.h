@@ -54,9 +54,7 @@ public:
     template<typename Iterator>
     bool anvance(Iterator &it, Iterator end, size_t n = 1)
     {
-        if (!n) {
-            return true;
-        }
+        assert(n);
         while (it != end) {
             if (skip_symbol(*it++) && !--n) {
                 return true;

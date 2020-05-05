@@ -11,7 +11,7 @@
 constexpr int64_t total_phrases = 10;
 constexpr int64_t last_n_delay_revisions = 10;
 constexpr double uppercase_delay_multiplier = 0.4;
-constexpr double starting_symbol_delay_multiplier = 0.8;
+constexpr double starting_symbol_delay_multiplier = 0.9;
 constexpr auto anki_query = "\"deck:En::Vocabulary Profile\" is:due -is:new -is:suspended";
 
 
@@ -191,9 +191,9 @@ uint64_t Trainer::fetch(uint64_t count, LearnStrategy strategy)
                "    SELECT\n"
                "        phrase_char_id,\n"
                "        avg(CASE\n"
-               "                WHEN cc.pos = -1 THEN delay * " << starting_symbol_delay_multiplier << "\n"
-               "                WHEN cc.ch = lower(cc.ch) THEN delay\n"
-               "                ELSE delay * " << uppercase_delay_multiplier << "\n"
+               "                WHEN cc.pos = -1           THEN delay * " << starting_symbol_delay_multiplier << "\n"
+               "                WHEN cc.ch != lower(cc.ch) THEN delay * " << uppercase_delay_multiplier << "\n"
+               "                ELSE delay\n"
                "            END) FILTER (WHERE row_number <= " << last_n_delay_revisions << ") AS delay\n"
                "    FROM (\n"
                "        SELECT\n"
