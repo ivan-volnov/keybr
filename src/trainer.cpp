@@ -8,11 +8,11 @@
 #include "config.h"
 
 
-constexpr int64_t total_phrases = 10;
+constexpr int64_t total_phrases = 15;
 constexpr int64_t last_n_delay_revisions = 10;
 constexpr double uppercase_delay_multiplier = 0.4;
 constexpr double starting_symbol_delay_multiplier = 0.9;
-constexpr auto anki_query = "\"deck:En::Vocabulary Profile\" is:due -is:new -is:suspended";
+constexpr auto anki_query = "\"deck:En::Vocabulary Profile\" -is:new -is:suspended";
 
 
 Trainer::Trainer() :
