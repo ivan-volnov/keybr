@@ -63,6 +63,11 @@ int64_t Phrase::current_errors() const
     return result;
 }
 
+int64_t Phrase::cumulative_errors(int64_t pos) const
+{
+    return stats.at(pos + 1).cumulative_errors;
+}
+
 void Phrase::add_stat(int64_t pos, int64_t errors, int64_t delay)
 {
     auto &stat = stats.at(pos + 1);

@@ -36,6 +36,7 @@ public:
 
     int64_t current_errors(int64_t pos) const;
     int64_t current_errors() const;
+    int64_t cumulative_errors(int64_t pos) const;
 
     void add_stat(int64_t pos, int64_t errors, int64_t delay);
     bool save(Query &sql_errors, Query &sql_delay);

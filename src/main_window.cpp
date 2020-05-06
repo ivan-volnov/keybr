@@ -67,20 +67,21 @@ void MainWindow::paint(const TrainerData &deck)
                 }
             }
             ch = phrase.get_symbol(j);
-            if (const auto errors = phrase.current_errors(j); errors > 0) {
-                if (ch == ' ') {
-                    // render symbol ␣ instead
-                    waddch(window, 0xe2);
-                    waddch(window, 0x90);
-                    ch = 0xa3;
-                }
+            if (ch == ' ' && (phrase.current_errors(j) > 0 || phrase.cumulative_errors(j) > 0)) {
+                // render symbol ␣ instead
+                waddch(window, 0xe2);
+                waddch(window, 0x90);
+                ch = 0xa3;
+            }
+            if (phrase.current_errors(j) > 0) {
                 ch |= COLOR_PAIR(ColorScheme::ColorError);
-                if (errors > 1) {
+                if (phrase.current_errors(j) > 1) {
                     ch |= A_STANDOUT;
                 }
             }
             else if (cur_phr.cursor_x < 0) {
-                ch |= COLOR_PAIR(ColorScheme::ColorGray);
+                ch |= COLOR_PAIR(phrase.cumulative_errors(j) > 0 ? ColorScheme::ColorErrorFixed
+                                                                 : ColorScheme::ColorGray);
             }
             waddch(window, ch);
         }

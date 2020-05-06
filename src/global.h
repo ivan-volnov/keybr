@@ -7,6 +7,7 @@ enum ColorScheme : unsigned int
 {
     ColorWindow,
     ColorError,
+    ColorErrorFixed,
     ColorGray,
     ColorTranslation,
 };
