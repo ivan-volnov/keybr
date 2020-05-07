@@ -82,19 +82,19 @@ char32_t utf8::decoder::symbol() const
 
 void utf8::encode_symbol(char32_t codepoint, std::string &str)
 {
-    if (codepoint <= 0x7f) {
+    if (codepoint < 0x80) {
         str.append(1, codepoint);
     }
-    else if (codepoint <= 0x7ff ) {
+    else if (codepoint < 0x800 ) {
         str.append(1, 0xc0 + (codepoint >> 6));
         str.append(1, 0x80 + (codepoint & 0x3f));
     }
-    else if (codepoint <= 0xffff) {
+    else if (codepoint < 0x10000) {
         str.append(1, 0xe0 + (codepoint >> 12));
-        str.append(1, 0x80 + ((codepoint >> 6) & 63));
-        str.append(1, 0x80 + (codepoint & 63));
+        str.append(1, 0x80 + ((codepoint >> 6) & 0x3f));
+        str.append(1, 0x80 + (codepoint & 0x3f));
     }
-    else if (codepoint <= 0x1ffff) {
+    else if (codepoint < 0x20000) {
         str.append(1, 0xf0 + (codepoint >> 18));
         str.append(1, 0x80 + ((codepoint >> 12) & 0x3f));
         str.append(1, 0x80 + ((codepoint >> 6) & 0x3f));

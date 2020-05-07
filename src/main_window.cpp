@@ -67,7 +67,7 @@ void MainWindow::paint(const TrainerData &deck)
                 }
             }
             ch = phrase.get_symbol(j);
-            if (ch == ' ' && (phrase.current_errors(j) > 0 || phrase.cumulative_errors(j) > 0)) {
+            if (ch == ' ' && (phrase.current_errors(j) > 0 || (cur_phr.cursor_x < 0 && phrase.cumulative_errors(j) > 0))) {
                 // render symbol ␣ instead
                 waddch(window, 0xe2);
                 waddch(window, 0x90);
