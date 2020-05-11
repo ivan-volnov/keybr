@@ -155,6 +155,23 @@ size_t utf8::strlen(const char *str)
     return len;
 }
 
+size_t utf8::strlen(char32_t codepoint)
+{
+    if (codepoint < 0x80) {
+        return 1;
+    }
+    if (codepoint < 0x800 ) {
+        return 2;
+    }
+    if (codepoint < 0x10000) {
+        return 3;
+    }
+    if (codepoint < 0x20000) {
+        return 4;
+    }
+    return 0;
+}
+
 char32_t utf8::at(size_t idx, const std::string &str)
 {
     decoder decoder;
@@ -177,4 +194,20 @@ char32_t utf8::at(size_t idx, const char *str)
         }
     }
     throw std::out_of_range("utf8: out of range");
+}
+
+void utf8::resize(std::string &str, size_t n, char ch)
+{
+    if (!n) {
+        str.clear();
+        return;
+    }
+    decoder decoder;
+    for (auto it = str.begin(); it != str.end();) {
+        if (decoder.skip_symbol(*it++) && !--n) {
+            str.erase(it, str.end());
+            return;
+        }
+    }
+    str.append(n, ch);
 }

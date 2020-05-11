@@ -82,10 +82,12 @@ std::string encode(char32_t codepoint);
 
 size_t strlen(const std::string &str);
 size_t strlen(const char *str);
+size_t strlen(char32_t codepoint);
 
 char32_t at(size_t idx, const std::string &str);
 char32_t at(size_t idx, const char *str);
 
+void resize(std::string &str, size_t n, char ch);
 
 template<typename Iterator>
 Iterator next(Iterator it, Iterator end, size_t n = 1)
