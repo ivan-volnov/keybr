@@ -6,8 +6,6 @@
 class MainWindow;
 class Trainer;
 class TrainerData;
-struct _win_st;
-using WINDOW = struct _win_st;
 
 
 class AppScreen
@@ -23,7 +21,6 @@ private:
     void paint(const TrainerData &deck);
 
 private:
-    WINDOW *win;
     std::unique_ptr<MainWindow> main_window;
 
     std::shared_ptr<Trainer> trainer;
