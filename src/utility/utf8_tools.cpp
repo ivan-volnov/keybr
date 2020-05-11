@@ -56,7 +56,7 @@ constexpr uint8_t utf8d[] = {
 bool utf8::decoder::decode_symbol(uint8_t ch)
 {
     uint32_t type = utf8d[ch];
-    codepoint = state == UTF8_ACCEPT ? (0xff >> type) & (ch) : (ch & 0x3fu) | (codepoint << 6);
+    codepoint = state == UTF8_ACCEPT ? (0xffu >> type) & ch : (ch & 0x3fu) | (codepoint << 6u);
     state = utf8d[256 + state + type];
     if (state == UTF8_REJECT) {
         state = UTF8_ACCEPT;
@@ -86,19 +86,19 @@ void utf8::encode_symbol(char32_t codepoint, std::string &str)
         str.append(1, codepoint);
     }
     else if (codepoint < 0x800 ) {
-        str.append(1, 0xc0 + (codepoint >> 6));
-        str.append(1, 0x80 + (codepoint & 0x3f));
+        str.append(1, 0xc0u + (codepoint >> 6u));
+        str.append(1, 0x80u + (codepoint & 0x3fu));
     }
     else if (codepoint < 0x10000) {
-        str.append(1, 0xe0 + (codepoint >> 12));
-        str.append(1, 0x80 + ((codepoint >> 6) & 0x3f));
-        str.append(1, 0x80 + (codepoint & 0x3f));
+        str.append(1, 0xe0u + (codepoint >> 12u));
+        str.append(1, 0x80u + ((codepoint >> 6u) & 0x3fu));
+        str.append(1, 0x80u + (codepoint & 0x3fu));
     }
     else if (codepoint < 0x20000) {
-        str.append(1, 0xf0 + (codepoint >> 18));
-        str.append(1, 0x80 + ((codepoint >> 12) & 0x3f));
-        str.append(1, 0x80 + ((codepoint >> 6) & 0x3f));
-        str.append(1, 0x80 + (codepoint & 0x3f));
+        str.append(1, 0xf0u + (codepoint >> 18u));
+        str.append(1, 0x80u + ((codepoint >> 12u) & 0x3fu));
+        str.append(1, 0x80u + ((codepoint >> 6u) & 0x3fu));
+        str.append(1, 0x80u + (codepoint & 0x3fu));
     }
 }
 
