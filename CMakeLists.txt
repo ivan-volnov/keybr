@@ -10,8 +10,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
 add_subdirectory(libs/sqlite_database)
 add_subdirectory(libs/string_essentials)
 
-include_directories(libs/sqlite_database/include)
-include_directories(libs/string_essentials/include)
 include_directories(./)
 
 add_executable(${PROJECT_NAME}
