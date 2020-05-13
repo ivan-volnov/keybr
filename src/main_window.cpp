@@ -1,10 +1,10 @@
 #include "main_window.h"
+#include <string_essentials/string_essentials.hpp>
 #include <ncurses.h>
 #include <sstream>
 #include <iomanip>
 #include "global.h"
 #include "trainer.h"
-#include "utility/utf8_tools.h"
 
 
 constexpr int64_t border_h = 3;
@@ -87,11 +87,11 @@ void MainWindow::paint(const TrainerData &deck)
         }
     }
     auto translation = '[' + deck.current_phrase().get_translation() + ']';
-    int tr_len = utf8::strlen(translation);
+    int tr_len = string_essentials::utf8::strlen(translation);
     if (tr_len > width) {
-        const auto begin = utf8::next(translation.begin(), translation.end(), width - 1);
+        const auto begin = string_essentials::utf8::next(translation.begin(), translation.end(), width - 1);
         const auto end = std::prev(translation.end());
-        tr_len -= utf8::strlen(begin, end);
+        tr_len -= string_essentials::utf8::strlen(begin, end);
         translation.erase(begin, end);
     }
     if (cur_phr.cursor_y > cur_phr.center_y) {
@@ -105,7 +105,7 @@ void MainWindow::paint(const TrainerData &deck)
     }
     winsertln(window);
     if (cur_phr.cursor_y >= cur_phr.start_y) {
-        utf8::decoder decoder;
+        string_essentials::utf8::decoder decoder;
         for (uint8_t c : translation) {
             if (decoder.skip_symbol((ch = c))) {
                 ch |= COLOR_PAIR(ColorScheme::ColorTranslation);

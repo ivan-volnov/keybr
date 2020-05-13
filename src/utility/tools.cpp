@@ -27,15 +27,6 @@ std::string tools::weekday_to_string(uint32_t day)
     }
 }
 
-void tools::string_replace(std::string &str, const std::string &src, const std::string &dst)
-{
-    size_t pos = 0;
-    while ((pos = str.find(src, pos)) != std::string::npos) {
-        str.replace(pos, src.size(), dst);
-        pos += dst.size();
-    }
-}
-
 void tools::clone_file(const std::string &src, const std::string &dst)
 {
     if (std::filesystem::exists(dst)) {

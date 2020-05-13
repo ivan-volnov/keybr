@@ -8,8 +8,10 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
 
 add_subdirectory(libs/sqlite_database)
+add_subdirectory(libs/string_essentials)
 
 include_directories(libs/sqlite_database/include)
+include_directories(libs/string_essentials/include)
 include_directories(./)
 
 add_executable(${PROJECT_NAME}
@@ -36,11 +38,10 @@ add_executable(${PROJECT_NAME}
     src/utility/speech_engine.h
     src/utility/tools.cpp
     src/utility/tools.h
-    src/utility/utf8_tools.cpp
-    src/utility/utf8_tools.h
 )
 
 target_link_libraries(${PROJECT_NAME}
+    string_essentials
     ncurses
     sqlite_database
     curl

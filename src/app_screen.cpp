@@ -1,10 +1,10 @@
 #include "app_screen.h"
+#include <string_essentials/string_essentials.hpp>
 #include <ncurses.h>
 #include <locale.h>
 #include "main_window.h"
 #include "global.h"
 #include "trainer.h"
-#include "utility/utf8_tools.h"
 
 
 #define COLOR_TRANSPARRENT  -1
@@ -46,7 +46,7 @@ void AppScreen::run()
 {
     paint(*trainer);
     int key, height, width;
-    utf8::decoder decoder;
+    string_essentials::utf8::decoder decoder;
     while (true)
     {
         key = wgetch(stdscr);

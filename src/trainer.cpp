@@ -2,9 +2,9 @@
 #include <iostream>
 #include <regex>
 #include <sqlite_database/sqlite_database.h>
+#include <string_essentials/string_essentials.hpp>
 #include "utility/anki_client.h"
 #include "utility/tools.h"
-#include "utility/utf8_tools.h"
 #include "config.h"
 
 
@@ -64,21 +64,21 @@ uint64_t Trainer::anki_import(const std::string &query)
         const auto &fields = note.at("fields");
         auto phrase = fields.at("Front").at("value").get<std::string>();
         auto translation = fields.at("Back").at("value").get<std::string>();
-        tools::string_replace(phrase, ", etc.", "");
-        tools::string_replace(phrase, ", etc", "");
+        string_essentials::replace(phrase, ", etc.", "");
+        string_essentials::replace(phrase, ", etc", "");
         sql.clear_bindings()
            .bind(phrase)
            .bind(translation)
            .step();
         if (sql_select.clear_bindings().bind(phrase).step()) {
             const auto phrase_id = sql_select.get_int64();
-            utf8::decoder decoder;
+            string_essentials::utf8::decoder decoder;
             auto it = phrase.cbegin();
             for (int64_t pos = -1; pos < 0 || decoder.iterate(it, phrase.cend()); ++pos) {
                 sql_chars.clear_bindings()
                          .bind(phrase_id)
                          .bind(pos)
-                         .bind(utf8::encode(pos < 0 ? ' ' : decoder.symbol()))
+                         .bind(string_essentials::utf8::encode(pos < 0 ? ' ' : decoder.symbol()))
                          .step();
             }
             ++result;
@@ -219,7 +219,7 @@ uint64_t Trainer::fetch(uint64_t count, LearnStrategy strategy)
     uint64_t result = 0;
     while (sql.step()) {
         phrases.push_back({sql.get_uint64(),
-                           utf8::decode(sql.get_string()),
+                           string_essentials::utf8::decode(sql.get_string()),
                            sql.get_string(),
                            sql.get_int64_array(),
                            sql.get_int64_array(),
@@ -234,7 +234,7 @@ void Trainer::say_current_phrase() const
     if (!speech) {
         return;
     }
-    auto phrase = utf8::encode(current_phrase().get_phrase_text());
+    auto phrase = string_essentials::utf8::encode(current_phrase().get_phrase_text());
     phrase = std::regex_replace(phrase, std::regex("\\bsb\\b"), "somebody");
     phrase = std::regex_replace(phrase, std::regex("\\bsth\\b"), "something");
     phrase = std::regex_replace(phrase, std::regex("\\bswh\\b"), "somewhere");
@@ -245,8 +245,8 @@ void Trainer::say_current_phrase() const
     {
         phrase = std::regex_replace(phrase, std::regex("\\bor\\b"), ",");
     }
-    tools::string_replace(phrase, "(", "");
-    tools::string_replace(phrase, ")", "");
+    string_essentials::replace(phrase, "(", "");
+    string_essentials::replace(phrase, ")", "");
     if (phrase == "read, read, read") {
         phrase = "read, red, red";
     }
