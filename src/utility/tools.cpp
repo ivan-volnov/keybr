@@ -49,7 +49,6 @@ bool tools::am_I_being_debugged()
     return ok && (info.kp_proc.p_flag & P_TRACED) != 0;
 }
 
-
 std::string tools::clear_string(const std::string &string)
 {
     auto str = string;
