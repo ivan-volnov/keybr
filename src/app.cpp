@@ -31,7 +31,9 @@ App::App()
 void App::run(std::shared_ptr<Trainer> trainer)
 {
     auto layout = screen->create<VerticalLayout>();
-    layout->create<SimpleBorder>(3, 4)->create<MainWindow>(screen, std::move(trainer));
+    layout->create<SimpleBorder>(3, 4)->create<MainWindow>(screen, trainer);
+    trainer->set_progressbar(layout->create<ProgressBar>(ColorScheme::Translation, "_"));
+
     screen->run_modal();
 }
 
@@ -128,6 +130,11 @@ void MainWindow::paint() const
     }
     wmove(win, cur_phr.cursor_y + 1, cur_phr.cursor_x);
     wnoutrefresh(win);
+}
+
+bool MainWindow::requires_cursor() const
+{
+    return true;
 }
 
 uint8_t MainWindow::process_key(char32_t ch, bool is_symbol)

@@ -19,6 +19,8 @@ public:
     int64_t get_symbol_idx() const;
     int64_t get_phrase_idx() const;
 
+    double get_total_time_today() const;
+
     double accuracy() const;
 
 protected:

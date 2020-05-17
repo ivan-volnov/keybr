@@ -30,6 +30,7 @@ public:
 
 public:
     void paint() const override;
+    bool requires_cursor() const override;
     uint8_t process_key(char32_t ch, bool is_symbol) override;
 
 private:

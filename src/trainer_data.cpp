@@ -186,6 +186,16 @@ int64_t TrainerData::get_phrase_idx() const
     return phrase_idx;
 }
 
+double TrainerData::get_total_time_today() const
+{
+    auto sql = database->create_query();
+    sql << "SELECT sum(delay) / 1000000\n"
+           "FROM keybr_stat_delays\n"
+           "WHERE date(create_date, 'localtime') = date('now', 'localtime')";
+    sql.step();
+    return sql.get_uint64() / 60.0;
+}
+
 double TrainerData::accuracy() const
 {
     auto errors = session_errors;

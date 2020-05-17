@@ -7,6 +7,8 @@
 #include <random>
 
 
+class ProgressBar;
+
 
 class Trainer : public TrainerData
 {
@@ -19,17 +21,21 @@ public:
 
     bool process_key(char32_t key);
 
+    void set_progressbar(std::weak_ptr<ProgressBar> value);
+
 private:
     bool fetch();
     uint64_t fetch(uint64_t count, LearnStrategy strategy);
     bool load_next_exercise();
     void say_current_phrase() const;
     uint64_t count(LearnStrategy strategy) const;
+    void update_progress() const;
 
 private:
     std::unique_ptr<SpeechEngine> speech;
     std::mt19937 random_generator;
     std::chrono::steady_clock::time_point key_ts{};
+    std::weak_ptr<ProgressBar> progressbar_ptr;
 };
 
 #endif // TRAINER_H

@@ -3,6 +3,7 @@
 #include <regex>
 #include <sqlite_database/sqlite_database.h>
 #include <string_essentials/string_essentials.hpp>
+#include <tiled_ncurses/tiled_ncurses.hpp>
 #include "utility/anki_client.h"
 #include "utility/tools.h"
 #include "config.h"
@@ -291,6 +292,19 @@ bool Trainer::process_key(char32_t key)
     return true;
 }
 
+void Trainer::set_progressbar(std::weak_ptr<ProgressBar> value)
+{
+    progressbar_ptr = value;
+    update_progress();
+}
+
+void Trainer::update_progress() const
+{
+    if (auto progress = progressbar_ptr.lock()) {
+        progress->set_progres(std::fmod(100 * get_total_time_today() / Config::get<uint64_t>("daily_goal"), 100));
+    }
+}
+
 bool Trainer::load_next_exercise()
 {
     auto transaction = database->begin_transaction();
@@ -310,5 +324,6 @@ bool Trainer::load_next_exercise()
             ++phrase;
         }
     }
+    update_progress();
     return fetch();
 }
