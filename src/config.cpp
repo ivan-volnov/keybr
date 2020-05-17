@@ -2,10 +2,13 @@
 #include <unistd.h>
 #include <pwd.h>
 #include <ctime>
+#include <fstream>
+#include <iostream>
 #include "utility/tools.h"
 
 
-Config::Config()
+Config::Config() :
+    json({})
 {
     const char *homedir = getenv("HOME");
     if (homedir == nullptr) {
@@ -19,6 +22,17 @@ Config::Config()
     if (!std::filesystem::exists(backup_path)) {
         std::filesystem::create_directory(backup_path);
     }
+    if (auto conf = get_config_filepath(); std::filesystem::exists(conf)) {
+        std::ifstream(conf) >> json;
+    }
+    else {
+        json["total_phrases"] = 15;
+        json["last_n_delay_revisions"] = 10;
+        json["uppercase_delay_multiplier"] = 0.4;
+        json["starting_symbol_delay_multiplier"] = 0.9;
+        json["anki_query"] = "\"deck:En::Vocabulary Profile\" -is:new";
+        json["max_current_errors"] = 5;
+    }
 }
 
 bool Config::is_sound_enabled() const
@@ -29,6 +43,16 @@ bool Config::is_sound_enabled() const
 void Config::set_sound_enabled(bool value)
 {
     sound_enabled = value;
+}
+
+Config::~Config()
+{
+    try {
+        std::ofstream(get_config_filepath()) << std::setw(4) << json;
+    }
+    catch (const std::exception &e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
 }
 
 Config &Config::instance()
@@ -59,4 +83,9 @@ std::string Config::get_backup_db_filepath() const
     weekday.resize(3);
     weekday[0] = std::tolower(weekday[0]);
     return get_backup_path().append("keybr_backup_" + weekday + ".db");
+}
+
+std::string Config::get_config_filepath() const
+{
+    return get_app_path().append("config.json");
 }

@@ -8,12 +8,6 @@
 #include "config.h"
 
 
-constexpr int64_t total_phrases = 15;
-constexpr int64_t last_n_delay_revisions = 10;
-constexpr double uppercase_delay_multiplier = 0.4;
-constexpr double starting_symbol_delay_multiplier = 0.9;
-constexpr auto anki_query = "\"deck:En::Vocabulary Profile\" -is:new -is:suspended";
-
 
 Trainer::Trainer() :
     random_generator(std::random_device{}())
@@ -36,7 +30,7 @@ bool Trainer::load()
 uint64_t Trainer::anki_import(const std::string &query)
 {
     AnkiClient anki;
-    auto notes = anki.request("findNotes", {{"query", query.empty() ? anki_query : query}});
+    auto notes = anki.request("findNotes", {{"query", query.empty() ? Config::get<std::string>("anki_query") : query}});
     notes = anki.request("notesInfo", {{"notes", std::move(notes)}});
     auto transaction = database->begin_transaction();
 
@@ -136,7 +130,7 @@ void Trainer::show_stats() const
 
 bool Trainer::fetch()
 {
-    int64_t to_fetch = total_phrases - phrases.size();
+    int64_t to_fetch = Config::get<uint64_t>("total_phrases") - phrases.size();
     if (to_fetch > 0) {
         to_fetch -= fetch(to_fetch, LearnStrategy::ReviseErrors);
     }
@@ -191,10 +185,10 @@ uint64_t Trainer::fetch(uint64_t count, LearnStrategy strategy)
                "    SELECT\n"
                "        phrase_char_id,\n"
                "        avg(CASE\n"
-               "                WHEN cc.pos = -1           THEN delay * " << starting_symbol_delay_multiplier << "\n"
-               "                WHEN cc.ch != lower(cc.ch) THEN delay * " << uppercase_delay_multiplier << "\n"
+               "                WHEN cc.pos = -1           THEN delay * " << Config::get<double>("starting_symbol_delay_multiplier") << "\n"
+               "                WHEN cc.ch != lower(cc.ch) THEN delay * " << Config::get<double>("uppercase_delay_multiplier") << "\n"
                "                ELSE delay\n"
-               "            END) FILTER (WHERE row_number <= " << last_n_delay_revisions << ") AS delay\n"
+               "            END) FILTER (WHERE row_number <= " << Config::get<uint64_t>("last_n_delay_revisions") << ") AS delay\n"
                "    FROM (\n"
                "        SELECT\n"
                "            phrase_char_id,\n"
