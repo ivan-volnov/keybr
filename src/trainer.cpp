@@ -61,12 +61,8 @@ uint64_t Trainer::anki_import(const std::string &query)
         auto translation = fields.at("Back").at("value").get<std::string>();
         string_essentials::erase(phrase, ", etc.");
         string_essentials::erase(phrase, ", etc");
-        string_essentials::strip_html_tags(phrase);
-        string_essentials::trim(phrase);
-        string_essentials::replace_recursive(phrase, "  ", " ");
-        string_essentials::strip_html_tags(translation);
-        string_essentials::trim(translation);
-        string_essentials::replace_recursive(translation, "  ", " ");
+        tools::clear_string(phrase);
+        tools::clear_string(translation);
         sql.clear_bindings()
            .bind(phrase)
            .bind(translation)

@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <sys/sysctl.h>
 #include <unistd.h>
+#include <string_essentials/string_essentials.hpp>
 
 std::string tools::weekday_to_string(uint32_t day)
 {
@@ -46,4 +47,28 @@ bool tools::am_I_being_debugged()
     const bool ok = sysctl(mib, sizeof(mib) / sizeof(*mib), &info, &size, nullptr, 0) == 0;
     assert(ok);
     return ok && (info.kp_proc.p_flag & P_TRACED) != 0;
+}
+
+
+std::string tools::clear_string(const std::string &string)
+{
+    auto str = string;
+    string_essentials::strip_html_tags(str);
+    string_essentials::replace(str, ",", ", ");
+    string_essentials::replace(str, "!", "! ");
+    string_essentials::replace(str, " )", ")");
+    string_essentials::replace(str, "( ", "(");
+    string_essentials::replace(str, " ,", ",");
+    string_essentials::replace_recursive(str, "  ", " ");
+    string_essentials::trim(str);
+    return str;
+}
+
+std::string tools::clear_string(const std::string &string, bool &changed)
+{
+    auto str = clear_string(string);
+    if (str != string) {
+        changed = true;
+    }
+    return str;
 }
