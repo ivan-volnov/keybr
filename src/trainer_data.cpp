@@ -40,21 +40,21 @@ TrainerData::TrainerData()
                                    "    phrase_id INTEGER NOT NULL,\n"
                                    "    pos INTEGER NOT NULL,\n"
                                    "    ch TEXT NOT NULL,\n"
-                                   "    FOREIGN KEY (phrase_id) REFERENCES keybr_phrases(id)\n"
+                                   "    FOREIGN KEY (phrase_id) REFERENCES keybr_phrases(id) ON DELETE CASCADE\n"
                                    ")");
                     database->exec("CREATE TABLE keybr_stat_errors (\n"
                                    "    id INTEGER PRIMARY KEY,\n"
                                    "    create_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,\n"
                                    "    phrase_char_id INTEGER NOT NULL,\n"
                                    "    errors INTEGER NOT NULL,\n"
-                                   "    FOREIGN KEY (phrase_char_id) REFERENCES keybr_phrase_chars(id)\n"
+                                   "    FOREIGN KEY (phrase_char_id) REFERENCES keybr_phrase_chars(id) ON DELETE CASCADE\n"
                                    ")");
                     database->exec("CREATE TABLE keybr_stat_delays (\n"
                                    "    id INTEGER PRIMARY KEY,\n"
                                    "    create_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,\n"
                                    "    phrase_char_id INTEGER NOT NULL,\n"
                                    "    delay INTEGER NOT NULL,\n"
-                                   "    FOREIGN KEY (phrase_char_id) REFERENCES keybr_phrase_chars(id)\n"
+                                   "    FOREIGN KEY (phrase_char_id) REFERENCES keybr_phrase_chars(id) ON DELETE CASCADE\n"
                                    ")");
                     database->exec("CREATE INDEX keybr_phrase_chars_phrase_id_idx ON keybr_phrase_chars(phrase_id)");
                     database->exec("CREATE INDEX keybr_stat_errors_char_id_idx ON keybr_stat_errors(phrase_char_id)");
