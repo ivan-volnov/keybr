@@ -4,3 +4,6 @@
 [submodule "libs/string_essentials"]
 	path = libs/string_essentials
 	url = https://github.com/ivan-volnov/string_essentials.git
+[submodule "libs/tiled_ncurses"]
+	path = libs/tiled_ncurses
+	url = https://github.com/ivan-volnov/tiled_ncurses.git

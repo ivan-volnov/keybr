@@ -9,18 +9,17 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
 
 add_subdirectory(libs/sqlite_database)
 add_subdirectory(libs/string_essentials)
+add_subdirectory(libs/tiled_ncurses)
 
 include_directories(./)
 
 add_executable(${PROJECT_NAME}
-    src/app_screen.cpp
-    src/app_screen.h
+    src/app.cpp
+    src/app.h
     src/config.cpp
     src/config.h
     src/global.h
     src/main.cpp
-    src/main_window.cpp
-    src/main_window.h
     src/phrase.cpp
     src/phrase.h
     src/trainer.cpp
@@ -40,7 +39,7 @@ add_executable(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
     string_essentials
-    ncurses
+    tiled_ncurses
     sqlite_database
     curl
     "-framework ApplicationServices"
