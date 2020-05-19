@@ -30,7 +30,7 @@ Config::Config() :
         json["last_n_delay_revisions"] = 10;
         json["uppercase_delay_multiplier"] = 0.4;
         json["starting_symbol_delay_multiplier"] = 0.9;
-        json["anki_query"] = "\"deck:En::Vocabulary Profile\" -is:new";
+        json["anki_query"] = "\"deck:Vocabulary Profile\" -is:new";
         json["max_current_errors"] = 5;
         json["daily_goal"] = 25;
     }
