@@ -32,7 +32,7 @@ Config::Config() :
         json["starting_symbol_delay_multiplier"] = 0.9;
         json["anki_query"] = "\"deck:En::Vocabulary Profile\" -is:new";
         json["max_current_errors"] = 5;
-        json["daily_goal"] = 10;
+        json["daily_goal"] = 25;
     }
 }
 
