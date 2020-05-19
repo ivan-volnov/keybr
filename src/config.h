@@ -17,13 +17,21 @@ public:
     template<typename T>
     static T get(const std::string &key)
     {
-        return instance().json[key].get<T>();
+        auto &value = instance().json[key];
+        if (value.is_null()) {
+            value = T{};
+        }
+        return value.get<T>();
     }
 
     template<typename T>
     static T get(const std::string &key, const std::string &inner_key)
     {
-        return instance().json[key][inner_key].get<T>();
+        auto &value = instance().json[key][inner_key];
+        if (value.is_null()) {
+            value = T{};
+        }
+        return value.get<T>();
     }
 
     template<typename T>
