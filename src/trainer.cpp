@@ -266,6 +266,8 @@ bool Trainer::process_key(char32_t key)
     using namespace std::chrono;
     const auto now = steady_clock::now();
     const auto delay = key_ts.time_since_epoch().count() > 0 ? duration_cast<microseconds>(now - key_ts).count() : 0;
+    total_time_today += delay / 60000000.0;
+    update_progress();
     if (current_symbol() == key) {
         phrases.at(phrase_idx).add_stat(symbol_idx, 0, delay);
         if (++symbol_idx >= current_phrase().size()) {                  // on the last symbol of the phrase
@@ -303,7 +305,7 @@ void Trainer::set_progressbar(std::weak_ptr<ProgressBar> value)
 void Trainer::update_progress() const
 {
     if (auto progress = progressbar_ptr.lock()) {
-        progress->set_progres(std::fmod(100 * get_total_time_today() / Config::get<uint64_t>("daily_goal"), 100));
+        progress->set_progres(std::fmod(100 * total_time_today / Config::get<uint64_t>("daily_goal"), 100));
     }
 }
 
@@ -326,6 +328,5 @@ bool Trainer::load_next_exercise()
             ++phrase;
         }
     }
-    update_progress();
     return fetch();
 }

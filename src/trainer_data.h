@@ -30,6 +30,7 @@ protected:
     int64_t phrase_idx = 0;
     uint64_t session_errors = 0;
     uint64_t session_correct = 0;
+    double total_time_today;
 };
 
 #endif // TRAINER_DATA_H

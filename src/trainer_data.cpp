@@ -154,6 +154,7 @@ TrainerData::TrainerData()
         sql.reset() << "PRAGMA user_version =" << db_version << Query::step;
         database->exec("VACUUM");
     }
+    total_time_today = get_total_time_today();
 }
 
 int64_t TrainerData::phrase_count() const
