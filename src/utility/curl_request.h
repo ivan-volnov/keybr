@@ -29,6 +29,7 @@ private:
 private:
     CURL *curl;
     struct curl_slist *headers = nullptr;
+    static size_t instance_counter;
 };
 
 #endif // CURL_REQUEST_H

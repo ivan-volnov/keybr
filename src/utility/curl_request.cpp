@@ -2,14 +2,21 @@
 #include <curl/curl.h>
 
 
+
+size_t CurlSession::instance_counter = 0;
+
+
 CurlSession::CurlSession()
 {
-    if (auto res = curl_global_init(CURL_GLOBAL_ALL); res != CURLE_OK) {
-        throw std::runtime_error(curl_easy_strerror(res));
+    if (!instance_counter++) {
+        if (auto res = curl_global_init(CURL_GLOBAL_ALL); res != CURLE_OK) {
+            throw std::runtime_error(curl_easy_strerror(res));
+        }
     }
     if (!(curl = curl_easy_init())) {
         throw std::runtime_error("Can't init curl library");
     }
+    curl_easy_setopt(curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
     curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1);
     curl_easy_setopt(curl, CURLOPT_TCP_KEEPALIVE, 1);
 }
@@ -18,7 +25,9 @@ CurlSession::~CurlSession()
 {
     curl_slist_free_all(headers);
     curl_easy_cleanup(curl);
-    curl_global_cleanup();
+    if (!--instance_counter) {
+        curl_global_cleanup();
+    }
 }
 
 void CurlSession::set_json_headers()
@@ -52,6 +61,8 @@ void CurlSession::clear_headers()
 std::string CurlSession::get(const char *url)
 {
     curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "GET");
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, 0);
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, 0);
     return perform_request(url);
 }
 
