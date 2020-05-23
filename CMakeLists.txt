@@ -11,8 +11,6 @@ add_subdirectory(libs/sqlite_database)
 add_subdirectory(libs/string_essentials)
 add_subdirectory(libs/tiled_ncurses)
 
-include_directories(./)
-
 add_executable(${PROJECT_NAME}
     src/app.cpp
     src/app.h
@@ -35,6 +33,10 @@ add_executable(${PROJECT_NAME}
     src/utility/speech_engine.h
     src/utility/tools.cpp
     src/utility/tools.h
+)
+
+target_include_directories(${PROJECT_NAME}
+    PRIVATE ./
 )
 
 target_link_libraries(${PROJECT_NAME}
