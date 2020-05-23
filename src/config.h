@@ -35,15 +35,15 @@ public:
     }
 
     template<typename T>
-    static void set(const std::string &key, const T &value)
+    static void set(const std::string &key, T &&value)
     {
-        instance().json[key] = value;
+        instance().json[key] = std::forward<T>(value);
     }
 
     template<typename T>
-    static void set(const std::string &key, const std::string &inner_key, const T &value)
+    static void set(const std::string &key, const std::string &inner_key, T &&value)
     {
-        instance().json[key][inner_key] = value;
+        instance().json[key][inner_key] = std::forward<T>(value);
     }
 
     std::filesystem::path get_app_path() const;
