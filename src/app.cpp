@@ -101,34 +101,40 @@ void MainWindow::paint() const
             waddch(win, ch);
         }
     }
-    auto translation = '[' + trainer->current_phrase().get_translation() + ']';
-    int tr_len = string_essentials::utf8::strlen(translation);
-    if (tr_len > width) {
-        const auto begin = string_essentials::utf8::next(translation.begin(), translation.end(), width - 1);
-        const auto end = std::prev(translation.end());
-        tr_len -= string_essentials::utf8::strlen(begin, end);
-        translation.erase(begin, end);
-    }
-    if (cur_phr.cursor_y > cur_phr.center_y) {
-        wmove(win, cur_phr.cursor_y, 0);
-    }
-    else if (cur_phr.cursor_y < cur_phr.center_y) {
-        wmove(win, cur_phr.cursor_y, width - tr_len);
+    if (cur_phr.cursor_x >= 0) {
+        auto translation = '[' + trainer->current_phrase().get_translation() + ']';
+        int tr_len = string_essentials::utf8::strlen(translation);
+        if (tr_len > width) {
+            const auto begin = string_essentials::utf8::next(translation.begin(), translation.end(), width - 1);
+            const auto end = std::prev(translation.end());
+            tr_len -= string_essentials::utf8::strlen(begin, end);
+            translation.erase(begin, end);
+        }
+        if (cur_phr.cursor_y > cur_phr.center_y) {
+            wmove(win, cur_phr.cursor_y, 0);
+        }
+        else if (cur_phr.cursor_y < cur_phr.center_y) {
+            wmove(win, cur_phr.cursor_y, width - tr_len);
+        }
+        else {
+            wmove(win, cur_phr.cursor_y, std::max(0, std::min(cur_phr.center_x - tr_len / 2, width - tr_len)));
+        }
+        winsertln(win);
+        if (cur_phr.cursor_y >= cur_phr.start_y) {
+            string_essentials::utf8::decoder decoder;
+            for (uint8_t c : translation) {
+                if (decoder.skip_symbol((ch = c))) {
+                    ch |= get_color(ColorScheme::Translation);
+                }
+                waddch(win, ch);
+            }
+        }
+        wmove(win, cur_phr.cursor_y + 1, cur_phr.cursor_x);
     }
     else {
-        wmove(win, cur_phr.cursor_y, std::max(0, std::min(cur_phr.center_x - tr_len / 2, width - tr_len)));
+        winsertln(win);
+        wmove(win, getcury(win) + 1, getcurx(win));
     }
-    winsertln(win);
-    if (cur_phr.cursor_y >= cur_phr.start_y) {
-        string_essentials::utf8::decoder decoder;
-        for (uint8_t c : translation) {
-            if (decoder.skip_symbol((ch = c))) {
-                ch |= get_color(ColorScheme::Translation);
-            }
-            waddch(win, ch);
-        }
-    }
-    wmove(win, cur_phr.cursor_y + 1, cur_phr.cursor_x);
     wnoutrefresh(win);
 }
 
@@ -143,7 +149,7 @@ uint8_t MainWindow::process_key(char32_t ch, bool is_symbol)
         if (ch == 27) { // escape
             return PleaseExitModal;
         }
-        if (!trainer->process_key(ch)) {
+        if (!trainer->process_key(ch, *this)) {
             return PleaseExitModal;
         }
         return PleasePaint;

@@ -8,6 +8,7 @@
 
 
 class ProgressBar;
+class MainWindow;
 
 
 class Trainer : public TrainerData
@@ -19,7 +20,7 @@ public:
     uint64_t anki_import(const std::string &query);
     void show_stats() const;
 
-    bool process_key(char32_t key);
+    bool process_key(char32_t key, MainWindow &window);
 
     void set_progressbar(std::weak_ptr<ProgressBar> value);
 
