@@ -149,8 +149,12 @@ uint8_t MainWindow::process_key(char32_t ch, bool is_symbol)
         if (ch == 27) { // escape
             return PleaseExitModal;
         }
-        if (!trainer->process_key(ch, *this)) {
-            return PleaseExitModal;
+        if (!trainer->process_key(ch)) {
+            paint();
+            doupdate();
+            if (!trainer->load_next_exercise()) {
+                return PleaseExitModal;
+            }
         }
         return PleasePaint;
     }

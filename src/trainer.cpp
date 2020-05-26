@@ -4,8 +4,6 @@
 #include <sqlite_database/sqlite_database.h>
 #include <string_essentials/string_essentials.hpp>
 #include <tiled_ncurses/tiled_ncurses.hpp>
-#include <ncurses.h>
-#include "app.h"
 #include "utility/anki_client.h"
 #include "utility/tools.h"
 #include "config.h"
@@ -263,7 +261,7 @@ uint64_t Trainer::count(LearnStrategy strategy) const
     return result;
 }
 
-bool Trainer::process_key(char32_t key, MainWindow &window)
+bool Trainer::process_key(char32_t key)
 {
     using namespace std::chrono;
     const auto now = steady_clock::now();
@@ -274,16 +272,7 @@ bool Trainer::process_key(char32_t key, MainWindow &window)
         phrases.at(phrase_idx).add_stat(symbol_idx, 0, delay);
         if (++symbol_idx >= current_phrase().size()) {                  // on the last symbol of the phrase
             if (++phrase_idx >= static_cast<int64_t>(phrases.size())) { // on the last phrase
-                window.paint();
-                doupdate();
-                if (!load_next_exercise()) {
-                    return false;
-                }
-                phrase_idx = 0;
-                symbol_idx = 0;
-                key_ts = {};
-                say_current_phrase();
-                return true;
+                return false;
             }
             // on the space before the phrase
             symbol_idx = -1;
@@ -332,5 +321,12 @@ bool Trainer::load_next_exercise()
             ++phrase;
         }
     }
-    return fetch();
+    if (!fetch()) {
+        return false;
+    }
+    phrase_idx = 0;
+    symbol_idx = 0;
+    key_ts = {};
+    say_current_phrase();
+    return true;
 }
