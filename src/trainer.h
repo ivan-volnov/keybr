@@ -16,7 +16,7 @@ public:
     Trainer();
 
     bool load();
-    uint64_t anki_import(const std::string &query);
+    uint64_t anki_import();
     void show_stats() const;
 
     bool process_key(char32_t key);

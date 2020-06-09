@@ -1,22 +1,32 @@
 #include "app.h"
 #include <iostream>
-#include <libs/argparse.hpp>
+#include <libs/argh.h>
 #include "trainer.h"
 #include "utility/tools.h"
 #include "config.h"
 
 
-void run_app(argparse::ArgumentParser &program)
+void run(int argc, char *argv[])
 {
-    Config::instance().set_sound_enabled(program.get<bool>("--sound") == true);
+    argh::parser cmdl(argc, argv, argh::parser::SINGLE_DASH_IS_MULTIFLAG);
+    if (cmdl[{"h", "help"}]) {
+        std::cout << "Usage: " << std::filesystem::path(argv[0]).filename().string() << " [options]\n\n"
+                     "Optional arguments:\n"
+                     "-h --help               show this help message and exit\n"
+                     "-S --stats              show stats and exit\n"
+                     "-s --sound              read aloud the current phrase while typing\n"
+                     "-i --import             import cards from anki"
+                  << std::endl;
+        return;
+    }
+    Config::instance().set_sound_enabled(cmdl[{"s", "sound"}]);
     auto trainer = std::make_shared<Trainer>();
-    if (program.get<bool>("--stats")) {
+    if (cmdl[{"S", "stats"}]) {
         trainer->show_stats();
         return;
     }
-    if (program.get<bool>("--import")) {
-        auto query = program.present("--anki_query");
-        auto count = trainer->anki_import(query ? *query : "");
+    if (cmdl[{"i", "import"}]) {
+        auto count = trainer->anki_import();
         std::cout << "Successfully imported " << count << " cards" << std::endl;
         return;
     }
@@ -34,40 +44,16 @@ void run_app(argparse::ArgumentParser &program)
 
 int main(int argc, char *argv[])
 {
-    argparse::ArgumentParser program("keybr");
-    program.add_argument("-i", "--import")
-           .help("import cards from anki")
-           .default_value(false)
-           .implicit_value(true);
-    program.add_argument("-a", "--anki_query")
-           .help("specify anki query for the import");
-    program.add_argument("-s", "--sound")
-           .help("read aloud the current phrase while typing")
-           .default_value(false)
-           .implicit_value(true);
-    program.add_argument("-S", "--stats")
-           .help("show stats and exit")
-           .default_value(false)
-           .implicit_value(true);
-
-    try {
-        program.parse_args(argc, argv);
-    }
-    catch (const std::runtime_error &e) {
-        std::cerr << e.what() << std::endl;
-        std::cout << program;
-        return 1;
-    }
-
+#ifndef NDEBUG
     if (tools::am_I_being_debugged()) {
-        run_app(program);
+        run(argc, argv);
+        return 0;
     }
-    else {
-        try {
-            run_app(program);
-        }
-        catch (const std::exception &e) {
-            std::cerr << "Error: " << e.what() << std::endl;
-        }
+#endif
+    try {
+        run(argc, argv);
+    }
+    catch (const std::exception &e) {
+        std::cerr << "Error: " << e.what() << std::endl;
     }
 }

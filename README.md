@@ -1,28 +1,37 @@
 # keybr
 
 **keybr** is an advanced console keyboard trainer with language learning support.
-Just import your learning cards from [Anki](https://apps.ankiweb.net) and then use them for touch typing training.
-The app will track your typing speed and errors and choose phrases for repeating to force learning process.
+Just import your learning cards from [Anki](https://apps.ankiweb.net)
+and then use them for touch typing training.
+The app will track your typing speed and errors and choose phrases
+for repeating to force learning process.
 It also can read aloud current phrase.
 
 I believe it's a good idea to learn how to write the words you are learning.
-This app can help you to learn word spelling along with typing speed of every specific word.
+This app can help you to learn word spelling along with typing speed
+of every specific word.
 While you are training your typing speed you are also revising these word meanings.
 
-![screen](https://raw.githubusercontent.com/ivan-volnov/keybr/master/img/screen.png)
+![screen](img/screen.png)
 
 It supports only **macOS**. Other operating systems weren't tested and aren't planned.
 
-### Used libraries
+## Used libraries
 
-- ncurses *(text-based UI library)*
-- sqlite3 *(relational database management system contained in a C library)*
-- libcurl *(multiprotocol file transfer library)*
-- ApplicationServices framework *(for Apple Speech Synthesis Manager)*
-- nlohmann/json *(header-only JSON parser for Modern C++)*
-- p-ranav/argparse *(header-only argument parser for Modern C++)*
+- [ncurses](https://invisible-island.net/ncurses)
+*(text-based UI library)*
+- [sqlite3](https://www.sqlite.org)
+*(relational database management system contained in a C library)*
+- [libcurl](https://curl.haxx.se/libcurl)
+*(multiprotocol file transfer library)*
+- [ApplicationServices framework](https://developer.apple.com/documentation/applicationservices)
+*(for Apple Speech Synthesis Manager)*
+- [nlohmann/json](https://github.com/nlohmann/json)
+*(header-only JSON parser for Modern C++)*
+- [adishavit/argh](https://github.com/adishavit/argh)
+*(header-only argument parser for Modern C++)*
 
-### Installation
+## Installation
 
 ```bash
 mkdir build
@@ -33,32 +42,43 @@ make install
 
 It installs into /usr/local/bin directory
 
-### Anki preparation
+The database file ~/.keybr/keybr.db will be created at the first launch
+
+## Anki preparation
 
 - Install [AnkiConnect](https://ankiweb.net/shared/info/2055492159) plugin
 - Check your Note Type Fields. They must be **Front** and **Back**
 
-### Import cards from Anki with custom query
+## Configuration
 
-```bash
-keybr --import --anki_query "\"deck:En::Vocabulary Profile\" is:due -is:new -is:suspended"
+Config file: ~/.keybr/config.json
+
+```json
+{
+    "anki_query": "\"deck:Vocabulary Profile\" -is:new -is:learn -is:suspended",
+    "daily_goal": 10,
+    "last_n_delay_revisions": 10,
+    "max_current_errors": 5,
+    "starting_symbol_delay_multiplier": 0.9,
+    "total_phrases": 15,
+    "uppercase_delay_multiplier": 0.4
+}
 ```
 
-Use [Anki Searching Query Language](https://docs.ankiweb.net/#/searching).
+Use [Anki Searching Query Language](https://docs.ankiweb.net/#/searching)
+in anki_query parameter.
 Before importing you can test the query in Anki's Browse screen
 
-### Run
+## Run options
 
-```bash
-keybr
+```text
+Usage: keybr [options]
+
+Optional arguments:
+-h --help               show this help message and exit
+-S --stats              show stats and exit
+-s --sound              read aloud the current phrase while typing
+-i --import             import cards from anki
 ```
 
 Press escape to exit
-
-### Run with Speech Engine enabled
-
-```bash
-keybr --sound
-```
-
-The app will read aloud the current phrase while typing

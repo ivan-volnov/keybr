@@ -28,10 +28,10 @@ bool Trainer::load()
     return true;
 }
 
-uint64_t Trainer::anki_import(const std::string &query)
+uint64_t Trainer::anki_import()
 {
     AnkiClient anki;
-    auto notes = anki.request("findNotes", {{"query", query.empty() ? Config::get<std::string>("anki_query") : query}});
+    auto notes = anki.request("findNotes", {{"query", Config::get<std::string>("anki_query")}});
     notes = anki.request("notesInfo", {{"notes", std::move(notes)}});
     auto transaction = database->begin_transaction();
 
