@@ -15,8 +15,9 @@ void run(int argc, char *argv[])
                      "-h --help               show this help message and exit\n"
                      "-S --stats              show stats and exit\n"
                      "-s --sound              read aloud the current phrase while typing\n"
-                     "-i --import             import cards from anki"
-                  << std::endl;
+                     "   --import             import cards from anki\n"
+                     "   --clear_removed      remove cards that have been removed from anki deck\n"
+                  << std::flush;
         return;
     }
     Config::instance().set_sound_enabled(cmdl[{"s", "sound"}]);
@@ -25,9 +26,14 @@ void run(int argc, char *argv[])
         trainer->show_stats();
         return;
     }
-    if (cmdl[{"i", "import"}]) {
+    if (cmdl["import"]) {
         auto count = trainer->anki_import();
         std::cout << "Successfully imported " << count << " cards" << std::endl;
+        return;
+    }
+    if (cmdl["clear_removed"]) {
+        auto count = trainer->anki_clear_removed();
+        std::cout << "Successfully removed " << count << " cards" << std::endl;
         return;
     }
     if (!trainer->load()) {

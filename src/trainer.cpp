@@ -84,6 +84,69 @@ uint64_t Trainer::anki_import()
     return result;
 }
 
+uint64_t Trainer::anki_clear_removed()
+{
+    std::vector<uint64_t> ids;
+    auto sql = database->create_query();
+    {
+        std::unordered_map<std::string, uint64_t> phrase_map;
+        sql << "SELECT phrase, id FROM keybr_phrases";
+        while (sql.step()) {
+            phrase_map.insert({sql.get_string(), sql.get_uint64()});
+        }
+        AnkiClient anki;
+        auto notes = anki.request("findNotes", {{"query", Config::get<std::string>("anki_clear_query")}});
+        notes = anki.request("notesInfo", {{"notes", std::move(notes)}});
+        for (const auto &note : notes) {
+            auto phrase = note.at("fields").at("Front").at("value").get<std::string>();
+            string_essentials::erase(phrase, ", etc.");
+            string_essentials::erase(phrase, ", etc");
+            tools::clear_string(phrase);
+            phrase_map.erase(phrase);
+        }
+        if (phrase_map.empty()) {
+            return 0;
+        }
+        ids.reserve(phrase_map.size());
+        for (const auto &pair : phrase_map) {
+            ids.push_back(pair.second);
+        }
+    }
+    auto transaction = database->begin_transaction();
+
+    sql.reset();
+    sql << "DELETE FROM keybr_stat_delays\n"
+           "WHERE phrase_char_id IN (\n"
+           "    SELECT id\n"
+           "    FROM keybr_phrase_chars\n"
+           "    WHERE phrase_id IN";
+    sql.add_array(ids.size());
+    sql << ")";
+    sql.bind(ids).step();
+
+    sql.reset();
+    sql << "DELETE FROM keybr_stat_errors\n"
+           "WHERE phrase_char_id IN (\n"
+           "    SELECT id\n"
+           "    FROM keybr_phrase_chars\n"
+           "    WHERE phrase_id IN";
+    sql.add_array(ids.size());
+    sql << ")";
+    sql.bind(ids).step();
+
+    sql.reset();
+    sql << "DELETE FROM keybr_phrase_chars WHERE phrase_id IN";
+    sql.add_array(ids.size());
+    sql.bind(ids).step();
+
+    sql.reset();
+    sql << "DELETE FROM keybr_phrases WHERE id IN";
+    sql.add_array(ids.size());
+    sql.bind(ids).step();
+
+    return ids.size();
+}
+
 void Trainer::show_stats() const
 {
     constexpr int64_t column_width = 16;

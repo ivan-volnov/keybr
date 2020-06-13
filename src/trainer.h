@@ -17,6 +17,7 @@ public:
 
     bool load();
     uint64_t anki_import();
+    uint64_t anki_clear_removed();
     void show_stats() const;
 
     bool process_key(char32_t key);

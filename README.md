@@ -56,6 +56,7 @@ Config file: ~/.keybr/config.json
 ```json
 {
     "anki_query": "\"deck:Vocabulary Profile\" -is:new -is:learn -is:suspended",
+    "anki_clear_query": "\"deck:Vocabulary Profile\"",
     "daily_goal": 10,
     "last_n_delay_revisions": 10,
     "max_current_errors": 5,
@@ -66,7 +67,7 @@ Config file: ~/.keybr/config.json
 ```
 
 Use [Anki Searching Query Language](https://docs.ankiweb.net/#/searching)
-in anki_query parameter.
+in anki_query and anki_clear_query parameters.
 Before importing you can test the query in Anki's Browse screen
 
 ## Run options
@@ -78,7 +79,8 @@ Optional arguments:
 -h --help               show this help message and exit
 -S --stats              show stats and exit
 -s --sound              read aloud the current phrase while typing
--i --import             import cards from anki
+   --import             import cards from anki
+   --clear_removed      remove cards that have been removed from anki deck
 ```
 
 Press escape to exit

@@ -31,6 +31,7 @@ Config::Config() :
         json["uppercase_delay_multiplier"] = 0.4;
         json["starting_symbol_delay_multiplier"] = 0.9;
         json["anki_query"] = "\"deck:Vocabulary Profile\" -is:new -is:learn -is:suspended";
+        json["anki_clear_query"] = "\"deck:Vocabulary Profile\"";
         json["max_current_errors"] = 5;
         json["daily_goal"] = 25;
     }
