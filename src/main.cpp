@@ -9,16 +9,22 @@
 void run(int argc, char *argv[])
 {
     argh::parser cmdl(argc, argv, argh::parser::SINGLE_DASH_IS_MULTIFLAG);
-    if (cmdl[{"h", "help"}]) {
-        std::cout << "Usage: " << std::filesystem::path(argv[0]).filename().string() << " [options]\n\n"
-                     "Optional arguments:\n"
-                     "-h --help               show this help message and exit\n"
-                     "-S --stats              show stats and exit\n"
-                     "-s --sound              read aloud the current phrase while typing\n"
-                     "   --import             import cards from anki\n"
-                     "   --clear_removed      remove cards that have been removed from anki deck\n"
-                  << std::flush;
-        return;
+    {
+        auto flags = cmdl.flags();
+        for (const char *flag : {"S", "stats", "s", "sound", "import", "clear_removed"}) {
+            flags.erase(flag);
+        }
+        if (!flags.empty() || !cmdl.params().empty() || cmdl.pos_args().size() > 1) {
+            std::cout << "Usage: " << std::filesystem::path(argv[0]).filename().string() << " [options]\n\n"
+                         "Optional arguments:\n"
+                         "-h --help               show this help message and exit\n"
+                         "-S --stats              show stats and exit\n"
+                         "-s --sound              read aloud the current phrase while typing\n"
+                         "   --import             import cards from anki\n"
+                         "   --clear_removed      remove cards that have been removed from anki deck\n"
+                      << std::flush;
+            return;
+        }
     }
     Config::instance().set_sound_enabled(cmdl[{"s", "sound"}]);
     auto trainer = std::make_shared<Trainer>();
