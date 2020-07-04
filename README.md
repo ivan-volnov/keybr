@@ -34,6 +34,13 @@ It supports only **macOS**. Other operating systems weren't tested and aren't pl
 ## Installation
 
 ```bash
+brew tap ivan-volnov/tap
+brew install keybr
+```
+
+## Installation from source
+
+```bash
 mkdir build
 cd build/
 cmake ..
