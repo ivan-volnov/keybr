@@ -13,6 +13,12 @@ add_subdirectory(libs/sqlite_database)
 add_subdirectory(libs/string_essentials)
 add_subdirectory(libs/tiled_ncurses)
 
+if (APPLE)
+    set(SPEECH_ENGINE src/utility/speech_engine_mac.cpp)
+else()
+    set(SPEECH_ENGINE src/utility/speech_engine_none.cpp)
+endif()
+
 add_executable(${PROJECT_NAME}
     src/app.cpp
     src/app.h
@@ -31,10 +37,10 @@ add_executable(${PROJECT_NAME}
     src/utility/average.h
     src/utility/curl_request.cpp
     src/utility/curl_request.h
-    src/utility/speech_engine.cpp
     src/utility/speech_engine.h
     src/utility/tools.cpp
     src/utility/tools.h
+    ${SPEECH_ENGINE}
 )
 
 target_include_directories(${PROJECT_NAME}

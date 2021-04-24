@@ -41,6 +41,7 @@ brew install keybr
 ## Installation from source
 
 ```bash
+git clone --recurse-submodules -j6 https://github.com/ivan-volnov/keybr.git
 mkdir build
 cd build/
 cmake ..
