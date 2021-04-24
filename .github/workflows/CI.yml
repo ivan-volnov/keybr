@@ -27,7 +27,7 @@ jobs:
           mkdir build
           cd build/
           cmake ..
-          make
+          make -j4
         name: Build on macOS
 
   freebsd:
@@ -48,4 +48,4 @@ jobs:
             mkdir build
             cd build/
             cmake ..
-            make
+            make -j4

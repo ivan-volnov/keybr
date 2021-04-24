@@ -14,7 +14,12 @@ While you are training your typing speed you are also revising these word meanin
 
 ![screen](img/screen.png)
 
-It supports only **macOS**. Other operating systems weren't tested and aren't planned.
+## OS support
+
+- macOS (build tested on x64 and arm64)
+- FreeBSD (build tested on x64)
+
+Not tested but can successfully build on others.
 
 ## Used libraries
 
