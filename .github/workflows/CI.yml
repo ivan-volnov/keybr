@@ -1,0 +1,51 @@
+name: keybr build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+
+jobs:
+  macos:
+    name: macOS
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ARCH: [x64, arm64]
+        include:
+          - ARCH: x64
+            SDK_ROOT:
+          - ARCH: arm64
+            SDK_ROOT: SDKROOT=$(xcrun -sdk macosx11.1 --show-sdk-path)
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+        name: Build on macOS
+      - run: |
+          mkdir build
+          cd build/
+          cmake ..
+          make
+
+  freebsd:
+    name: FreeBSD (x64)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - uses: vmactions/freebsd-vm@v0.1.3
+        name: Build on FreeBSD
+        with:
+          usesh: true
+          mem: 4096
+          prepare: |
+            pkg install -y cmake
+          run: |
+            mkdir build
+            cd build/
+            cmake ..
+            make
