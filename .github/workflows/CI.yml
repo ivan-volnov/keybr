@@ -43,7 +43,7 @@ jobs:
           usesh: true
           mem: 4096
           prepare: |
-            pkg install -y cmake
+            pkg install -y cmake ncurses
           run: |
             mkdir build
             cd build/
