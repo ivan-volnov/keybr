@@ -4,6 +4,7 @@
 #include <sys/sysctl.h>
 #include <unistd.h>
 #include <string_essentials/string_essentials.hpp>
+#include <cassert>
 
 std::string tools::weekday_to_string(uint32_t day)
 {

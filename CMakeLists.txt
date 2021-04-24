@@ -7,6 +7,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
 
+find_package(CURL REQUIRED)
+
 add_subdirectory(libs/sqlite_database)
 add_subdirectory(libs/string_essentials)
 add_subdirectory(libs/tiled_ncurses)
@@ -37,13 +39,14 @@ add_executable(${PROJECT_NAME}
 
 target_include_directories(${PROJECT_NAME}
     PRIVATE ./
+    PRIVATE ${CURL_INCLUDE_DIR}
 )
 
 target_link_libraries(${PROJECT_NAME}
     string_essentials
     tiled_ncurses
     sqlite_database
-    curl
+    ${CURL_LIBRARIES}
     "-framework ApplicationServices"
 )
 
