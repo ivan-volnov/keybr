@@ -21,22 +21,18 @@ jobs:
             SDK_ROOT: SDKROOT=$(xcrun -sdk macosx11.1 --show-sdk-path)
     steps:
       - uses: actions/checkout@v2
-        with:
-          fetch-depth: 1
-        name: Build on macOS
       - run: |
           mkdir build
           cd build/
           cmake ..
           make
+        name: Build on macOS
 
   freebsd:
     name: FreeBSD (x64)
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
-        with:
-          fetch-depth: 1
       - uses: vmactions/freebsd-vm@v0.1.3
         name: Build on FreeBSD
         with:
