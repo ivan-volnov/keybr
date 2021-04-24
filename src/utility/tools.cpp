@@ -47,6 +47,7 @@ void tools::clone_file(const std::string &src, const std::string &dst)
 
 bool tools::am_I_being_debugged()
 {
+#ifdef __APPLE__
     struct kinfo_proc info;
     info.kp_proc.p_flag = 0;
     int mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid() };
@@ -54,6 +55,10 @@ bool tools::am_I_being_debugged()
     const bool ok = sysctl(mib, sizeof(mib) / sizeof(*mib), &info, &size, nullptr, 0) == 0;
     assert(ok);
     return ok && (info.kp_proc.p_flag & P_TRACED) != 0;
+#else
+    // TODO: implement this
+    return false;
+#endif
 }
 
 std::string tools::clear_string(const std::string &string)
