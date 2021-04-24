@@ -15,8 +15,10 @@ add_subdirectory(libs/tiled_ncurses)
 
 if (APPLE)
     set(SPEECH_ENGINE src/utility/speech_engine_mac.cpp)
+    set(FRAMEWORKS "-framework ApplicationServices")
 else()
     set(SPEECH_ENGINE src/utility/speech_engine_none.cpp)
+    set(FRAMEWORKS "")
 endif()
 
 add_executable(${PROJECT_NAME}
@@ -53,7 +55,7 @@ target_link_libraries(${PROJECT_NAME}
     tiled_ncurses
     sqlite_database
     ${CURL_LIBRARIES}
-    "-framework ApplicationServices"
+    ${FRAMEWORKS}
 )
 
 install (TARGETS
