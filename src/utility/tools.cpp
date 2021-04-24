@@ -1,5 +1,7 @@
 #include "tools.h"
+#ifdef __APPLE__
 #include <sys/clonefile.h>
+#endif
 #include <filesystem>
 #include <sys/sysctl.h>
 #include <unistd.h>
@@ -34,9 +36,13 @@ void tools::clone_file(const std::string &src, const std::string &dst)
     if (std::filesystem::exists(dst)) {
         std::filesystem::remove(dst);
     }
+#ifdef __APPLE__
     if (clonefile(src.c_str(), dst.c_str(), CLONE_NOOWNERCOPY) != 0) {
         throw std::runtime_error("Error clonefile: " + std::to_string(errno) + " from " + src + " to " + dst);
     };
+#else
+    std::filesystem::copy(src, dst);
+#endif
 }
 
 bool tools::am_I_being_debugged()
