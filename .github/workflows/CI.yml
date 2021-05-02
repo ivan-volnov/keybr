@@ -1,4 +1,4 @@
-name: keybr build
+name: CI
 
 on:
   workflow_dispatch:
@@ -8,17 +8,8 @@ on:
 
 jobs:
   macos:
-    name: macOS
+    name: macOS (x64)
     runs-on: macos-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        ARCH: [x64, arm64]
-        include:
-          - ARCH: x64
-            SDK_ROOT:
-          - ARCH: arm64
-            SDK_ROOT: SDKROOT=$(xcrun -sdk macosx11.1 --show-sdk-path)
     steps:
       - uses: actions/checkout@v2
         with:

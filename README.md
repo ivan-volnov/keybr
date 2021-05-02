@@ -16,10 +16,10 @@ While you are training your typing speed you are also revising these word meanin
 
 ## OS support
 
-- macOS (build tested on x64 and arm64)
-- FreeBSD (build tested on x64)
+- macOS
+- FreeBSD
 
-Not tested but can successfully build on others.
+Not tested but can be successfully built on others.
 
 ## Used libraries
 
